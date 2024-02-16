@@ -1,0 +1,192 @@
+TODO
+
+-   I think would be good to do a bit of a refactor.
+-   Attributes can be attached to calls but not to names. Solution could be to
+    store either just names, or all expressions, as expression(x), attaching
+    attributes to that. This would allow e = expr_list(...) then e[[1]].
+
+-   functions from stringr to emulate:
+        str_detect
+        str_match -- good
+        str_extract -- would be like expr_match's full match, no group matches.
+        str_replace -- good
+        str_locate -- location of matches; this would need some extra function
+            like expr_sub() and expr_sub()<- so that locations like c(1L, 2L, 3L)
+            can be used e.g. expr_sub(expr, c(1,2,3)) === expr[[1]][[2]][[3]].
+-    functionality to add: ._, .._, ..._ would be unnamed groups.
+-    add tests to .., like how . has .A:name, etc. Maybe ..A{1}?{2}
+
+-   make use of "rules" strings consistent across functions and ideally using
+    the same ruleset
+
+-   could be called elixir or aurum
+
+-   build into miasma0
+
+-   test everything
+
+-   document everything
+
+-   expr_replace is a bit too different from expr_match, because expr_match
+    doesn't recurse "into" expressions.
+
+    I think the proper use of expr_match versus expr_replace will be clearer
+    once I develop expr_apply. For use cases here, need to search miasma0 for
+    uses of rrapply on language objects, also think about translate.
+
+USE CASES OF RRAPPLY
+here "tree" means a nested list
+
+expr_apply(x,
+    f,
+    levels = Inf,
+    sub = FALSE,
+    how = c("replace", "list", "unlist"))
+
+composer.R
+- Extract all symbols named "state" -- note, things called "state" in a tree
+  here are always plain symbols (i.e. never calls or whatev)
+    # Get names of states, removing dot for "any state"
+    state_names = as.character(unique(unname(
+        rrapply::rrapply(model$transitions,
+            condition = function(x, .xname) .xname == "state",
+            f = all.vars, classes = c("name", "language"), how = "unlist")
+    )));
+    state_names = setdiff(state_names, ".");
+- Extract all names from anything not called "func" in a tree
+    # Get all identifier names
+    all_names = as.character(unique(unname(
+        rrapply::rrapply(model[c("transitions", "definitions", "directives")],
+            condition = function(x, .xname) .xname != "func",
+            f = all.vars, classes = c("name", "language"), how = "unlist")
+    )));
+- Replace all names called "state" and which are equal to as.name(".") with a
+  known alternative name
+        if (identical(t$from[[1]]$state, as.name("."))) {
+            # If LHS is a dot, duplicate transition for each state, replacing all dots on LHS and RHS with the state
+            for (state_name in names(IR$symbols$states)) {
+                t2 = t;
+                t2$from[[1]]$state = as.name(state_name);
+                t2$to = rrapply::rrapply(t2$to, condition = function(x) "state" %in% names(x),
+                    f = function(x) {
+                        if (identical(x$state, as.name("."))) {
+                            x$state = as.name(state_name);
+                        }
+                        return (x)
+                    }, classes = "list", how = "replace"
+                );
+                expanded_transitions[[length(expanded_transitions) + 1]] = t2;
+            }
+        }
+        (next example in composer.R is like example 1)
+- Anything for which there is a member named 'state', change names of a component
+        to = rrapply::rrapply(t$to, condition = function(x) "state" %in% names(x),
+            f = function(x) {
+                # If RHS is 0, do not expect any subscripts; a zero with subscripts will have been picked up as a parse error
+                if (x$state == "0") {
+                    return (x);
+                }
+                if (length(x$attr) != length(attr_from)) {
+                    semantic_error("transition from", rlang::expr((!!from)[!!!attr_from]),
+                        "subscripts on RHS do not match LHS");
+                }
+                if (length(x$attr) != 0) {
+                    names(x$attr) = as.character(attr_from);
+                }
+                return (x)
+            }, classes = "list", how = "replace");
+
+directives.R
+- take { X } in contact statement and replace with { multiplier * X }
+    # TODO I think this, and similar thing below, could be
+    # rate = elixir::expr_replace(rate, { {..A} }, { {!!mname * ..A} })
+
+ode-lua, tau-lua, ode
+- replace any name like ^x[0-9]+\\.$ with mangled version
+x = rrapply::rrapply(list(eq2[[field]][[idx]]), condition = function(x) as.character(x) %like% "^x[0-9]+\\.$", f = function(x) as.name(mangle(as.character(x))), classes = "name", how = "replace")[[1]];
+
+For expr_match, expr_replace: make ..A only able to match a single statement;
+make ...A also able to match multiple statements, not just comma args; and make
+sure that .F(.A) picks up 1 named arg, .F(..A) picks up 1 expression arg.
+
+
+I think it might be a good idea to restrict the function of this package
+to something much more circumscribed, just translating R "expressions" into
+C++ or Lua, rather than translating "statements" or functions all at a time.
+
+For translating functions, I am leaning more towards the Lua route in the long
+term.
+
+This might mean getting rid of translation of assignment operators completely
+and of braces.
+
+Or, have separate functions for translating expressions and for translating
+functions. And have a special restricted subset of R that runs and produces
+valid R code, but can also be translated into C++ or Lua code that does the
+same thing.
+
+
+
+# use cases for language tools.
+
+
+## mangle: used a ton
+
+## expr_add, expr_subtract: used in many places
+
+## is_identifier: used about 10x in parser.R
+
+## spec_as_list: used in parser.R and also within language_tools.R, where I'm not sure it's needed
+
+## match_params: couple of times
+args = match_params(prototype$arglist, args, func_name);
+# Also have this note in macro_Rt.R, but no actual use of match_params
+cpp = function(model, IR, name, ..., tolerance) {
+    # TODO Note to readers of the code -- miasma passes ellipsis arguments through to macros as an actual list
+    # containing all additional parameters not otherwise captured. That's why there is no list() around the ...
+    # in the line below -- we would ordinarily need something like as.character(substitute(list(...))[-1L]).
+    # Perhaps clarify this by renaming the parameters "states..." or "inf_states..." and changing match_params
+    # to accept one argument whose name ends in "..." but is not "...", giving params to that arg.
+    inf_states = as.character(as.list(substitute(...)[-1])[[1]]);
+    ## . . .
+}
+
+## func_str: couple of times just within language_tools.R
+stop(..., "  Function signature is ", func_str(func_name, func_def), ".")
+
+translate
+
+tape
+
+
+
+### MOVE TO ELIXIR ###
+
+## lang2str: used in many places, usually for diagnostic messages but also in translate.R to make names out of language
+# i.e. to make `x[1]` as a name
+
+## match_language: 7, all in parser.R, of the form
+if (!is.null(m <- match_language(s, { .C ? .A -> .B := .X }))) {
+    # State transition with condition
+    transition = list(condition = m$.C, from = parse_from(m$.A, s), to = parse_to(m$.B, s),
+        action = parse_action(m$.X, s),
+        src = paste(lang2str(m$.C), "?", lang2str(m$.A), "->", lang2str(m$.B), ":=", lang2str(m$.X)));
+    transitions = c(transitions, list(transition));
+}
+
+## replace_language: around 16, typically like this:
+# TODO why all wrapped in do.call and with [[1]]? That is annoying
+x[[i]] = do.call(miasma0:::replace_language,
+    list(x[[i]], quote(N.rate(.A, .B)), N.rate.def))[[1]];
+
+# For match_language and replace_language, would be nice to have { ... } for
+# quoting and !! for injection. So e.g. these would work:
+replace_language({1 + 3}, {1}, {2}) # 2 + 3
+x = quote(y <- bar(1, 2))
+extra_arg = 7
+replace_language(x, {bar(.A, .B)}, {foo(.B, .A, !!extra_arg)}) # y <- foo(2, 1, 7)
+something = quote(myrand() + 2 * myrand())
+myrand = quote(rexp(1, 4.5))
+replace_language(something, { rand() }, myrand) # rexp(1, 4.5) + 2 * rexp(1, 4.5)
+# In the above, it should be the case that { x } is essentially shorthand/interchangeable with quote(x)
+# and that x is interchangeable with { !!x }

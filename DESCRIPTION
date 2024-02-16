@@ -1,0 +1,25 @@
+Package: elixir
+Type: Package
+Title: Transmutation of Languages
+Version: 0.0.0.9000
+Authors@R: person("Nicholas", "Davies", email = "nicholas.davies@lshtm.ac.uk", role = c("cre", "aut", "cph"), comment = c(ORCID = "0000-0002-1740-1412"))
+Description: Tools for transforming 'R' expressions, including into other languages.
+URL: https://github.com/nicholasdavies/elixir
+BugReports: https://github.com/nicholasdavies/elixir/issues
+License: MIT + file LICENSE
+Encoding: UTF-8
+Imports: 
+    methods,
+    rlang,
+    data.table,
+    stringr,
+    glue
+Suggests:
+    knitr,
+    rmarkdown,
+    testthat (>= 3.0.0)
+LazyData: true
+Roxygen: list(markdown = TRUE)
+RoxygenNote: 7.3.1
+VignetteBuilder: knitr
+Config/testthat/edition: 3
