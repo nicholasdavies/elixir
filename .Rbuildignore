@@ -3,3 +3,4 @@
 ^LICENSE\.md$
 ^local$
 ^README\.Rmd$
+^\.github$
