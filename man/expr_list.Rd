@@ -47,8 +47,8 @@ the \code{[} operator instead, which retains recursion information;
 
 Note that when you replace part of an \code{expr_list} with another \code{expr_list},
 the recursion information from the "replacement" \code{expr_list} is copied over,
-while replacing part of an \code{expr_list} with an expression or a list of
-expressions retains the "old" recursion information.
+while replacing part of an \code{expr_list} with an expression or a "plain" list
+of expressions retains the existing recursion information.
 }
 \examples{
 expr_list(

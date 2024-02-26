@@ -16,8 +16,8 @@
 #'
 #' Note that when you replace part of an `expr_list` with another `expr_list`,
 #' the recursion information from the "replacement" `expr_list` is copied over,
-#' while replacing part of an `expr_list` with an expression or a list of
-#' expressions retains the "old" recursion information.
+#' while replacing part of an `expr_list` with an expression or a "plain" list
+#' of expressions retains the existing recursion information.
 #'
 #' @param ... Expressions to include in the list. If the arguments are named,
 #' these will be passed on to the returned list.
