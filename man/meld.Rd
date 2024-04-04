@@ -9,6 +9,7 @@ meld(
   file = NULL,
   rules = NULL,
   reindent = TRUE,
+  ipath = ".",
   env = rlang::env_clone(parent.frame())
 )
 }
@@ -39,6 +40,8 @@ the result. \code{NA} to not try to guess.
 \item{env}{Environment in which to evaluate R expressions. The default is
 \code{rlang::env_clone(parent.frame())}, and it is best to clone the environment
 so that new declarations do not pollute the environment in question.}
+
+\item{idir}{Directory to search for \verb{#include}d files}
 }
 \value{
 The interpreted text as a single character string.
@@ -59,6 +62,18 @@ out (with the message "[skipped]" appended) using the \code{comment} element
 of \code{rules}. If any of the backticked expressions are length L > 1, the
 entire interpreted line is repeated L times, separated by newlines and
 with elements of the expression in sequence.
+
+There are some special sequences:
+\itemize{
+\item \code{`^expr`} subs in \code{expr} only on the first line of a multi-line expansion
+\item \code{`!^expr`} subs in \code{expr} on all but the first line of a multi-line expansion
+\item \code{`$expr`}subs in \code{expr} only on the last line of a multi-line expansion
+\item \code{`!$expr`} subs in \code{expr} on all but the last line of a multi-line expansion
+\item \code{`#include <file>`} runs \code{file} through \code{meld} and pastes in the result
+}
+
+The \verb{#include} command cannot be used on the same line as other backticked
+expressions, and searches for \code{file} in the path \code{ipath}.
 
 The function tries to guess \code{rules} from the file extension if that is
 possible. If the file extension is .c, then \code{"C"} is guessed; for .h, .hpp,

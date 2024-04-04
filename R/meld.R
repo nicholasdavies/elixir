@@ -15,6 +15,16 @@
 #' entire interpreted line is repeated L times, separated by newlines and
 #' with elements of the expression in sequence.
 #'
+#' There are some special sequences:
+#' - `` `^expr` `` subs in `expr` only on the first line of a multi-line expansion
+#' - `` `!^expr` `` subs in `expr` on all but the first line of a multi-line expansion
+#' - `` `$expr` ``subs in `expr` only on the last line of a multi-line expansion
+#' - `` `!$expr` `` subs in `expr` on all but the last line of a multi-line expansion
+#' - `` `#include <file>` `` runs `file` through `meld` and pastes in the result
+#'
+#' The `#include` command must appear by itself on a line, and searches for
+#' `file` in the path `ipath`.
+#'
 #' The function tries to guess `rules` from the file extension if that is
 #' possible. If the file extension is .c, then `"C"` is guessed; for .h, .hpp,
 #' or .cpp, `"C++"` is guessed; for .R, `"R"` is guessed; for .lua, `"Lua"` is
@@ -48,6 +58,7 @@
 #' the result. `NA` to not try to guess.
 #' @param reindent If `TRUE`, the default, reindent according to `rules`. If
 #' `FALSE`, do not reindent.
+#' @param idir Directory to search for `#include`d files
 #' @param env Environment in which to evaluate R expressions. The default is
 #' `rlang::env_clone(parent.frame())`, and it is best to clone the environment
 #' so that new declarations do not pollute the environment in question.
@@ -65,7 +76,7 @@
 #'     "    return a + b + c;",
 #'     "}")
 #' @export
-meld = function(..., file = NULL, rules = NULL, reindent = TRUE, env = rlang::env_clone(parent.frame()))
+meld = function(..., file = NULL, rules = NULL, reindent = TRUE, ipath = ".", env = rlang::env_clone(parent.frame()))
 {
     # Get rules
     if (is.null(rules)) {
@@ -86,7 +97,7 @@ meld = function(..., file = NULL, rules = NULL, reindent = TRUE, env = rlang::en
         }
     }
 
-    if (!is.na(rules)) {
+    if (!all(is.na(rules))) {
         rules = check_rules(rules,
             comment = list(c("character", "logical"), 'length(rule) %in% 1:2'),
             indent_more = list("character"),
@@ -166,6 +177,18 @@ meld = function(..., file = NULL, rules = NULL, reindent = TRUE, env = rlang::en
         if (length(blocks) > 0) {
             R_blocks = R_blocks[-blocks];
             R_block_open = R_block_open[-blocks];
+        }
+
+        # Execute #include command if present
+        match_include = regmatches(lines[l],
+            regexec("^\\s*`\\s*#\\s*include\\s+<([^>]+)>\\s*`\\s*$", lines[l]));
+        if (length(match_include[[1]]) == 2) {
+            inc_file = file.path(ipath, match_include[[1]][2]);
+            if (!file.exists(inc_file)) {
+                stop("Cannot find #included file ", inc_file, ".");
+            }
+            lines[l] = meld(file = inc_file, rules = rules, reindent = reindent, ipath = ipath, env = env);
+            next;
         }
 
         # Find backtick-escaped expressions within the line
