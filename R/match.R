@@ -378,9 +378,13 @@ match_sub = function(expr, pattern, n, into, longnames, loc, parent_match, env)
 print.expr_match = function(x, ...)
 {
     fmt = function(x) {
-        ifelse(sapply(x, is.list),
-            paste0("(", format(x), ")"),
-            format(x))
+        sapply(x, function(x) {
+            if (is.integer(x)) { # so deparse doesn't turn e.g. c(2L,1L) into 2:1
+                paste0("c(", paste0(x, "L", collapse = ", "), ")")
+            } else {
+                deparse(x, backtick = TRUE, control = "all")
+            }
+        })
     }
 
     if (is.null(x)) {
