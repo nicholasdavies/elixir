@@ -30,7 +30,7 @@
 #' or .cpp, `"C++"` is guessed; for .R, `"R"` is guessed; for .lua, `"Lua"` is
 #' guessed. Case is ignored for file extensions.
 #'
-#' R blocks are evaluated immediately prior to the next-occuring backticked
+#' R blocks are evaluated immediately prior to the next-occurring backticked
 #' line, so variables modified in an R block are available to any backticked
 #' expression following the R block. Any remaining R blocks are run after
 #' remaining lines are interpreted.
@@ -58,7 +58,7 @@
 #' the result. `NA` to not try to guess.
 #' @param reindent If `TRUE`, the default, reindent according to `rules`. If
 #' `FALSE`, do not reindent.
-#' @param idir Directory to search for `#include`d files
+#' @param ipath Path to search for `#include`d files
 #' @param env Environment in which to evaluate R expressions. The default is
 #' `rlang::env_clone(parent.frame())`, and it is best to clone the environment
 #' so that new declarations do not pollute the environment in question.

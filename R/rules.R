@@ -21,8 +21,8 @@ op = function(arity, precedence, associativity, str, nopar = integer(0))
 # Built-in rules
 ruleset = list(
     "C" = list(
-        indent_more = c("{", "(", "["),
-        indent_less = c("}", ")", "]"),
+        indent_more = c("{", "("),
+        indent_less = c("}", ")"),
         indent_both = c("case", "default:"),
         comment = c("/*", "*/"),
         ignore = list(
@@ -58,7 +58,7 @@ ruleset = list(
         paren = "({x})",
         literal = list(
             "NULL" = function(x) "R_NilValue",
-            numeric = function(x) if (is.na(x)) "NA_REAL" else if (!x %like% "\\.") paste0(x, ".") else as.character(x), # TODO locale
+            numeric = function(x) if (is.na(x)) "NA_REAL" else if (!x %like% "\\.") paste0(x, ".") else format(x, digits = 17), # TODO locale
             integer = function(x) if (is.na(x)) "NA_INTEGER" else as.character(x),
             logical = function(x) if (is.na(x)) "NA_LOGICAL" else if (x) "true" else "false",
             character = function(x) if (is.na(x)) "NA_CHARACTER" else paste0('"', stringi::stri_escape_unicode(x), '"')
@@ -67,8 +67,8 @@ ruleset = list(
     ),
 
     "C++" = list(
-        indent_more = c("{", "(", "["),
-        indent_less = c("}", ")", "]"),
+        indent_more = c("{", "("),
+        indent_less = c("}", ")"),
         indent_both = c("public:", "private:", "protected:", "case", "default:"),
         comment = "//",
         ignore = list(
@@ -104,7 +104,7 @@ ruleset = list(
         paren = "({x})",
         literal = list(
             "NULL" = function(x) "R_NilValue",
-            numeric = function(x) if (is.na(x)) "NA_REAL" else if (!x %like% "\\.") paste0(x, ".") else as.character(x), # TODO locale
+            numeric = function(x) if (is.na(x)) "NA_REAL" else if (!x %like% "\\.") paste0(x, ".") else format(x, digits = 17), # TODO locale
             integer = function(x) if (is.na(x)) "NA_INTEGER" else as.character(x),
             logical = function(x) if (is.na(x)) "NA_LOGICAL" else if (x) "true" else "false",
             character = function(x) if (is.na(x)) "NA_CHARACTER" else paste0('"', stringi::stri_escape_unicode(x), '"')
@@ -113,8 +113,8 @@ ruleset = list(
     ),
 
     "Lua" = list(
-        indent_more = c("{", "(", "[", "function", "if", "do", "repeat"), # for and while covered by 'do'
-        indent_less = c("}", ")", "]", "end", "until"),
+        indent_more = c("{", "(", "function", "if", "do", "repeat"), # for and while covered by 'do'
+        indent_less = c("}", ")", "end", "until"),
         indent_both = c("else", "elseif"),
         comment = "--",
         ignore = list(
@@ -152,7 +152,7 @@ ruleset = list(
         paren = "({x})",
         literal = list(
             "NULL" = function(x) "luajr.NULL",
-            numeric = function(x) if (is.na(x)) "luajr.NA_real_" else as.character(x), # TODO locale
+            numeric = function(x) if (is.na(x)) "luajr.NA_real_" else format(x, digits = 17), # TODO locale
             integer = function(x) if (is.na(x)) "luajr.NA_integer_" else as.character(x),
             logical = function(x) if (is.na(x)) "luajr.NA_logical_" else if (x) "true" else "false",
             character = function(x) if (is.na(x)) "luajr.NA_character_" else paste0('"', stringi::stri_escape_unicode(x), '"')
@@ -161,8 +161,8 @@ ruleset = list(
     ),
 
     "R" = list(
-        indent_more = c("{", "(", "["),
-        indent_less = c("}", ")", "]"),
+        indent_more = c("{", "("),
+        indent_less = c("}", ")"),
         indent_both = character(0),
         comment = "#",
         ignore = list(

@@ -1,23 +1,24 @@
 #' Make a list of expressions
 #'
 #' Constructs a list of expressions, with support for Elixir's special
-#' [expression] syntax (expression literals with `{}`, alternatives with `?`,
-#' and recursion with `~`).
+#' [expression] syntax (expression literals with `{}` or `~{}`, and
+#' alternatives with `?`).
 #'
 #' Be aware that using the `[[` indexing operator on an object of class
 #' `expr_list` discards information about whether that element of the list is
-#' marked for recursion. In other words, if `xl <- expr_list({.A}, ~{.A})`,
+#' marked as anchored. In other words, if `xl <- expr_list({.A}, ~{.A})`,
 #' then `xl[[1]]` and `xl[[2]]` are both equal to the "bare" symbol `.A`, so
-#' the information that the second element of the list should recurse has been
+#' the information that the second element of the list is anchored has been
 #' lost. Consequently, in e.g. `expr_match(expr, xl[[2]])`, it will be as
-#' though the tilde isn't there, and no recursion into `expr` will be done. Use
-#' the `[` operator instead, which retains recursion information;
-#' `expr_match(expr, xl[2])` will work as expected.
+#' though the tilde isn't there, and `xl[[2]]` will not just match with the top
+#' level of `expr` as was probably intended. Use the `[` operator instead,
+#' which retains anchoring information; `expr_match(expr, xl[2])` will work as
+#' expected.
 #'
 #' Note that when you replace part of an `expr_list` with another `expr_list`,
-#' the recursion information from the "replacement" `expr_list` is copied over,
+#' the anchoring information from the "replacement" `expr_list` is copied over,
 #' while replacing part of an `expr_list` with an expression or a "plain" list
-#' of expressions retains the existing recursion information.
+#' of expressions retains the existing anchoring information.
 #'
 #' @param ... Expressions to include in the list. If the arguments are named,
 #' these will be passed on to the returned list.
@@ -30,9 +31,9 @@
 #' @return A list of expressions, of class `expr_list`.
 #' @examples
 #' expr_list(
-#'    { 1 + 1 = 2 } ? { 2 + 2 = 4 },
-#'    { y = a * x + b },
-#'    ~{ .A }
+#'    ~{ 1 + 1 = 2 } ? ~{ 2 + 2 = 4 },
+#'    ~{ y = a * x + b },
+#'    { .A }
 #' )
 #'
 #' # There is support for rlang's injection operators.
@@ -110,8 +111,8 @@ print.expr_list = function(x, ...)
         warning("Corrupted expr_list: length of list not equal to length of 'into' attribute.")
     }
 
-    fmt_expr = function(expr, tilde) {
-        paste(if (tilde) '~{' else '{', format(expr), '}')
+    fmt_expr = function(expr, unanchored) {
+        paste(if (unanchored) '{' else '~{', format(expr), '}')
     }
 
     str = mapply(
@@ -131,7 +132,7 @@ print.expr_list = function(x, ...)
 }
 
 #' This exists primarily so that `expr_apply` can be applied to an `expr_list`,
-#' which may potentially contain elements of class `expr_apply`.
+#' which may potentially contain elements of class `expr_alt`.
 #'
 #' @keywords internal
 #' @export
@@ -139,7 +140,13 @@ print.expr_list = function(x, ...)
 {
     if (is.null(value)) {
         # value is NULL: omit elements in i
-        return (structure(`[.simple.list`(xl, -i), class = "expr_alt", into = attr(xl, "into")[-i]))
+        if (is.logical(i)) { i = which(i) }
+        if (length(i) > 0) {
+            return (structure(`[.simple.list`(xl, -i), class = "expr_alt", into = attr(xl, "into")[-i]))
+        } else {
+            # This special case is needed, as we cannot do list[-numeric()] for the whole list.
+            return (xl)
+        }
     }
 
     l = unclass(xl); # To avoid recursing into this function below
@@ -203,12 +210,12 @@ print.expr_list = function(x, ...)
 #' @seealso [expr_match()], [expr_locate()] which return indices to
 #' subexpressions.
 #' @examples
-#' expr = expr_list({ y = a * x + b })[[1]]
+#' expr = quote(y == a * x + b)
 #' expr_sub(expr, NULL)
 #' expr_sub(expr, 3)
 #' expr_sub(expr, c(3, 3))
 #'
-#' expr_sub(expr, c(3, 3)) <- expr_list({ q })[[1]]
+#' expr_sub(expr, c(3, 3)) <- quote(q)
 #' print(expr)
 #' @export
 expr_sub = function(expr, idx, env = parent.frame())
@@ -257,7 +264,7 @@ do_parse_simple = function(expr, env = parent.frame())
 
     # Check for mistakes in specifying -- tilde or question mark
     if (length(lx) > 1 && (identical(lx[[1]], quote(`~`)) || identical(lx[[1]], quote(`?`)))) {
-        stop("Do not use recursion operator (~) or alternatives operator (?) in first argument.", call. = FALSE)
+        stop("Do not use anchor operator (~) or alternatives operator (?) in first argument.", call. = FALSE)
     }
 
     # Convert env to an environment if it is a list
@@ -277,8 +284,8 @@ do_parse_simple = function(expr, env = parent.frame())
 
 # Parses pattern/replacement expressions passed to the expr_* functions with a
 # special syntax including brace-wrapped expression literals, ? for enumerating
-# alternatives and ~ for specifying that the expression is a pattern that
-# should be recursed into the parse tree being searched.
+# alternatives and ~ for specifying that the expression is a pattern that is
+# anchored at the top level.
 do_parse = function(expr, env = parent.frame())
 {
     # Unevaluated expr as list
@@ -286,9 +293,9 @@ do_parse = function(expr, env = parent.frame())
 
     # Special cases needed to handle passing NULL or ~NULL
     if (length(lx) == 0) {
-        return (structure(list(NULL), class = "expr_list", into = FALSE))
-    } else if (identical(lx, list(quote(`~`), NULL))) {
         return (structure(list(NULL), class = "expr_list", into = TRUE))
+    } else if (identical(lx, list(quote(`~`), NULL))) {
+        return (structure(list(NULL), class = "expr_list", into = FALSE))
     }
 
     # Convert env to an environment if it is a list
@@ -303,10 +310,10 @@ do_parse = function(expr, env = parent.frame())
             # Format: ?z or ?~z, where z is something evaluating to a list, but is NOT brace wrapped
             if (is.call(lx[[2]]) && identical(lx[[2]][[1]], quote(`~`)) && length(lx[[2]]) == 2) {
                 alts = eval(lx[[2]][[2]], env)
-                into = TRUE;
+                into = FALSE;
             } else {
                 alts = eval(lx[[2]], env)
-                into = FALSE;
+                into = TRUE;
             }
             if (!is.list(alts)) {
                 stop("In ?x or ?~x, x must evaluate to a list.")
@@ -360,10 +367,10 @@ do_parse = function(expr, env = parent.frame())
 # Removes tildes and stores their presence as TRUE in attribute "into"
 detilde = function(x, to_eval = FALSE)
 {
-    into = rep(FALSE, length(x))
+    into = rep(TRUE, length(x))
     for (i in seq_along(x)) {
         if (!is.name(x[[i]]) && identical(x[[i]][[1]], quote(`~`))) {
-            into[i] = TRUE
+            into[i] = FALSE
             if (to_eval) {
                 x[[i]] = x[[i]][[2]]
             } else {
@@ -418,8 +425,8 @@ debrace = function(x, ev, env)
 #' ```
 #' expr_list(number = { `.A:numeric` } ? { `.A:integer` },
 #'     string = { `.A:character` }, symbol = { `.A:name` })
-#' expr_match({ 1 * 2 }, { .A * .B })
-#' expr_match({ 1 * 2 }, ~{ `.A:numeric` })
+#' expr_match({ 1 * 2 }, ~{ .A * .B })
+#' expr_match({ 1 * 2 }, { `.A:numeric` })
 #' expr_replace({ y = a*x^3 + b*x^2 + c*x^1 + d*x^0 },
 #'     { ..X ^ ..N }, { pow(..X, ..N) })
 #' ```
@@ -483,18 +490,19 @@ debrace = function(x, ev, env)
 #' which has the same number of alternatives as in the pattern.
 #'
 #' You can also use the tilde operator `~` to specify that a given pattern
-#' should "recurse into" an expression. For example, in
+#' should be "anchored" at the top level of an expression, and will not
+#' "recurse into" the expression. For example, in
 #'
 #' ```
 #' exprs = expr_list(2, 5, {1 + 4})
-#' expr_match(exprs, { `.A:numeric` })
+#' expr_match(exprs, ~{ `.A:numeric` })
 #' ```
 #'
 #' only the numbers `2` and `5` will match. However, in
 #'
 #' ```
 #' exprs = expr_list(2, 5, {1 + 4})
-#' expr_match(exprs, ~{ `.A:numeric` })
+#' expr_match(exprs, { `.A:numeric` })
 #' ```
 #'
 #' all numbers `2`, `5`, `1` and `4` will match, because the `pattern` can

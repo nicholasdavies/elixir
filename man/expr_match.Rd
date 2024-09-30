@@ -8,12 +8,12 @@
 \alias{expr_locate}
 \title{Find patterns in expressions}
 \usage{
-expr_match(expr, pattern, n = Inf, env = parent.frame())
+expr_match(expr, pattern, n = Inf, longnames = FALSE, env = parent.frame())
 
 expr_count(expr, pattern, n = Inf, env = parent.frame())
 expr_detect(expr, pattern, n = Inf, env = parent.frame())
-expr_extract(expr, pattern, what = "match", n = Inf, gather = FALSE,
-    env = parent.frame())
+expr_extract(expr, pattern, what = "match", n = Inf,
+    longnames = FALSE, gather = FALSE, env = parent.frame())
 expr_locate(expr, pattern, n = Inf, gather = FALSE,
     env = parent.frame())
 }
@@ -27,13 +27,17 @@ syntax (see \link{expression}) can be used to specify alternatives.}
 \item{n}{Maximum number of matches to make in each expression; default is
 \code{Inf}.}
 
+\item{longnames}{Normally, patterns like \code{.A}, \code{..B}, \code{...C}, etc, are named
+just \code{A}, \code{B}, \code{C}, etc., in the returned matches, without the dot(s)
+before each name. With \code{longnames = TRUE}, the dots are kept.}
+
 \item{env}{Environment for injections in \code{expr}, \code{pattern} (see
 \link{expression}).}
 
 \item{what}{(\code{expr_extract} only) Name of the pattern to extract (or
 \code{"match"}, the default, to extract the entire match).}
 
-\item{gather}{(\code{expr_extract} and \code{expr_detect} only) Whether to only return
+\item{gather}{(\code{expr_extract} and \code{expr_locate} only) Whether to only return
 the successful matches, in a single unnested list.}
 }
 \value{
@@ -64,7 +68,7 @@ functions are inspired by similar functions in the \code{stringr} package.
 \code{expr_match} is the most general of the bunch. As an example, suppose you
 had an expression containing the sum of two numbers (e.g.
 \code{3.14159 + 2.71828}) and you wanted to extract the two numbers. You
-could use the pattern \code{.A + .B} to extract the match:
+could use the pattern \code{{ .A + .B }} to extract the match:
 
 \if{html}{\out{<div class="sourceCode">}}\preformatted{expr_match(\{ 3.14159 + 2.71828 \}, \{ .A + .B \})
 }\if{html}{\out{</div>}}
@@ -133,14 +137,15 @@ require the whole symbol to be wrapped in backticks, as in the examples
 above, so that they parse as symbols.
 }
 
-\subsection{Recursing into expressions}{
+\subsection{Anchoring versus recursing into expressions}{
 
-If you want your pattern to be able to match not just at the "outer level"
-of your expression(s), but also to match to sub-expressions within, use the
-tilde (\code{~}) outside the braces (see \link{expression} for details). For example,
-\code{expr_match({1 + 2 + 3 + 4}, {..A + .B})} only gives one match, to the
+If you want your anchor your pattern, i.e. ensure that the pattern will only
+match at the "outer level" of your expression(s), without matching to any
+sub-expressions within, use a tilde (\code{~}) outside the braces (see
+\link{expression} for details). For example,
+\code{expr_match({1 + 2 + 3 + 4}, ~{..A + .B})} only gives one match, to the
 addition at the outermost level of \code{1 + 2 + 3} plus \code{4}, but
-\code{expr_match({1 + 2 + 3 + 4}, ~{..A + .B})} also matches to the inner
+\code{expr_match({1 + 2 + 3 + 4}, {..A + .B})} also matches to the inner
 additions of \code{1 + 2} plus \code{3} and \code{1} plus \code{2}.
 }
 
@@ -169,7 +174,7 @@ found.
 complete matches. Or, by specifing a capture token name in the argument
 \code{which}, those can be extracted instead. For example:
 
-\if{html}{\out{<div class="sourceCode">}}\preformatted{expr_extract(expr_list(\{(a+b)+(x+y)\}, \{"H"*"I"\}, \{3+4\}), ~\{.A + .B\}, "A")
+\if{html}{\out{<div class="sourceCode">}}\preformatted{expr_extract(expr_list(\{(a+b)+(x+y)\}, \{"H"*"I"\}, \{3+4\}), \{.A + .B\}, "A")
 }\if{html}{\out{</div>}}
 
 gives \code{list(list(quote(a), quote(x)), NULL, list(3))}.

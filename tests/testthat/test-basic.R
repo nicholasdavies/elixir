@@ -20,7 +20,7 @@ test_that("do_parse_simple works", {
 
     # With z an expr_list
     z = expr_list({x}, {y})
-    expect_identical(do_parse_simple(z), structure(list(quote(x), quote(y)), class = "expr_list", into = c(FALSE, FALSE)))
+    expect_identical(do_parse_simple(z), structure(list(quote(x), quote(y)), class = "expr_list", into = c(TRUE, TRUE)))
 
     # Names
     z = list(a = quote(x), b = quote(y))
@@ -32,48 +32,48 @@ test_that("expr_list works", {
 
     # NULL
     b = NULL
-    expect_identical(expr_list(NULL),  structure(list(NULL), class = "expr_list", into = FALSE))
-    expect_identical(expr_list(~NULL), structure(list(NULL), class = "expr_list", into = TRUE))
-    expect_identical(expr_list(b),     structure(list(NULL), class = "expr_list", into = FALSE))
-    expect_identical(expr_list(~b),    structure(list(NULL), class = "expr_list", into = TRUE))
+    expect_identical(expr_list(NULL),  structure(list(NULL), class = "expr_list", into = TRUE))
+    expect_identical(expr_list(~NULL), structure(list(NULL), class = "expr_list", into = FALSE))
+    expect_identical(expr_list(b),     structure(list(NULL), class = "expr_list", into = TRUE))
+    expect_identical(expr_list(~b),    structure(list(NULL), class = "expr_list", into = FALSE))
 
     # "Expression literals"
-    expect_identical(expr_list({ .A }),  structure(list(quote(.A)), class = "expr_list", into = FALSE))
-    expect_identical(expr_list(~{ .A }), structure(list(quote(.A)), class = "expr_list", into = TRUE))
+    expect_identical(expr_list({ .A }),  structure(list(quote(.A)), class = "expr_list", into = TRUE))
+    expect_identical(expr_list(~{ .A }), structure(list(quote(.A)), class = "expr_list", into = FALSE))
     expect_identical(expr_list({ .A } ? ~{ .B }),
         structure(list(
-            structure(list(quote(.A), quote(.B)), class = "expr_alt", into = c(FALSE, TRUE))),
+            structure(list(quote(.A), quote(.B)), class = "expr_alt", into = c(TRUE, FALSE))),
         class = "expr_list", into = NA))
 
     # Literals
-    expect_identical(expr_list(2),  structure(list(2), class = "expr_list", into = FALSE))
-    expect_identical(expr_list(~2), structure(list(2), class = "expr_list", into = TRUE))
+    expect_identical(expr_list(2),  structure(list(2), class = "expr_list", into = TRUE))
+    expect_identical(expr_list(~2), structure(list(2), class = "expr_list", into = FALSE))
     expect_identical(expr_list(~2 ? 4),
         structure(list(
-            structure(list(2, 4), class = "expr_alt", into = c(TRUE, FALSE))),
+            structure(list(2, 4), class = "expr_alt", into = c(FALSE, TRUE))),
         class = "expr_list", into = NA))
 
     # With expressions stored in variables
     x = quote(letters[1])
     y = quote(letters[2*2])
-    expect_identical(expr_list(x),  structure(list(quote(letters[1])), class = "expr_list", into = FALSE))
-    expect_identical(expr_list(~x), structure(list(quote(letters[1])), class = "expr_list", into = TRUE))
+    expect_identical(expr_list(x),  structure(list(quote(letters[1])), class = "expr_list", into = TRUE))
+    expect_identical(expr_list(~x), structure(list(quote(letters[1])), class = "expr_list", into = FALSE))
     expect_identical(expr_list(x ? y),
         structure(list(
-            structure(list(quote(letters[1]), quote(letters[2*2])), class = "expr_alt", into = c(FALSE, FALSE))),
+            structure(list(quote(letters[1]), quote(letters[2*2])), class = "expr_alt", into = c(TRUE, TRUE))),
         class = "expr_list", into = NA))
 
     # With z a list of expressions
     z = list(quote(x), quote(y))
-    expect_identical(expr_list(z),   structure(list(quote(x), quote(y)), class = "expr_list", into = c(FALSE, FALSE)))
-    expect_identical(expr_list(~z),  structure(list(quote(x), quote(y)), class = "expr_list", into = c(TRUE, TRUE)))
+    expect_identical(expr_list(z),   structure(list(quote(x), quote(y)), class = "expr_list", into = c(TRUE, TRUE)))
+    expect_identical(expr_list(~z),  structure(list(quote(x), quote(y)), class = "expr_list", into = c(FALSE, FALSE)))
     expect_identical(expr_list(?z),
         structure(list(
-            structure(list(quote(x), quote(y)), class = "expr_alt", into = c(FALSE, FALSE))),
+            structure(list(quote(x), quote(y)), class = "expr_alt", into = c(TRUE, TRUE))),
         class = "expr_list", into = NA))
     expect_identical(expr_list(?~z),
         structure(list(
-            structure(list(quote(x), quote(y)), class = "expr_alt", into = c(TRUE, TRUE))),
+            structure(list(quote(x), quote(y)), class = "expr_alt", into = c(FALSE, FALSE))),
         class = "expr_list", into = NA))
 
     # Names
@@ -89,7 +89,7 @@ test_that("expr_list works", {
     # Interestingly, the below fails if the definition of val is put directly
     # into the call to expect_identical. Not clear why.
     val = expr_list({a}, {b}, {!!c}, env = list(c = 3))
-    expect_identical(val, structure(list(quote(a), quote(b), 3), class = "expr_list", into = c(FALSE, FALSE, FALSE)))
+    expect_identical(val, structure(list(quote(a), quote(b), 3), class = "expr_list", into = c(TRUE, TRUE, TRUE)))
 })
 
 test_that("expr_sub works", {

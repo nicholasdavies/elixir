@@ -31,30 +31,31 @@ A list of expressions, of class \code{expr_list}.
 }
 \description{
 Constructs a list of expressions, with support for Elixir's special
-\link{expression} syntax (expression literals with \code{{}}, alternatives with \verb{?},
-and recursion with \code{~}).
+\link{expression} syntax (expression literals with \code{{}} or \code{~{}}, and
+alternatives with \verb{?}).
 }
 \details{
 Be aware that using the \code{[[} indexing operator on an object of class
 \code{expr_list} discards information about whether that element of the list is
-marked for recursion. In other words, if \code{xl <- expr_list({.A}, ~{.A})},
+marked as anchored. In other words, if \code{xl <- expr_list({.A}, ~{.A})},
 then \code{xl[[1]]} and \code{xl[[2]]} are both equal to the "bare" symbol \code{.A}, so
-the information that the second element of the list should recurse has been
+the information that the second element of the list is anchored has been
 lost. Consequently, in e.g. \code{expr_match(expr, xl[[2]])}, it will be as
-though the tilde isn't there, and no recursion into \code{expr} will be done. Use
-the \code{[} operator instead, which retains recursion information;
-\code{expr_match(expr, xl[2])} will work as expected.
+though the tilde isn't there, and \code{xl[[2]]} will not just match with the top
+level of \code{expr} as was probably intended. Use the \code{[} operator instead,
+which retains anchoring information; \code{expr_match(expr, xl[2])} will work as
+expected.
 
 Note that when you replace part of an \code{expr_list} with another \code{expr_list},
-the recursion information from the "replacement" \code{expr_list} is copied over,
+the anchoring information from the "replacement" \code{expr_list} is copied over,
 while replacing part of an \code{expr_list} with an expression or a "plain" list
-of expressions retains the existing recursion information.
+of expressions retains the existing anchoring information.
 }
 \examples{
 expr_list(
-   { 1 + 1 = 2 } ? { 2 + 2 = 4 },
-   { y = a * x + b },
-   ~{ .A }
+   ~{ 1 + 1 = 2 } ? ~{ 2 + 2 = 4 },
+   ~{ y = a * x + b },
+   { .A }
 )
 
 # There is support for rlang's injection operators.

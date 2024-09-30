@@ -1,5 +1,11 @@
 TODO
 
+X   Make sure NA into doesn't conflict with other into = NA stuff
+-   Rename expr_translate to something else?
+-   The only use case for expr_list, really, is within patterns / replacements
+    of expr_replace. Reflect this in docs.
+X   I think the tilde is nicer as an anchor than as an into. DONE
+
 -   I think would be good to do a bit of a refactor.
 -   Attributes can be attached to calls but not to names. Solution could be to
     store either just names, or all expressions, as expression(x), attaching

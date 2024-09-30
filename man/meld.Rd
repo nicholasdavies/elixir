@@ -37,11 +37,11 @@ the result. \code{NA} to not try to guess.
 \item{reindent}{If \code{TRUE}, the default, reindent according to \code{rules}. If
 \code{FALSE}, do not reindent.}
 
+\item{ipath}{Path to search for \verb{#include}d files}
+
 \item{env}{Environment in which to evaluate R expressions. The default is
 \code{rlang::env_clone(parent.frame())}, and it is best to clone the environment
 so that new declarations do not pollute the environment in question.}
-
-\item{idir}{Directory to search for \verb{#include}d files}
 }
 \value{
 The interpreted text as a single character string.
@@ -72,15 +72,15 @@ There are some special sequences:
 \item \code{`#include <file>`} runs \code{file} through \code{meld} and pastes in the result
 }
 
-The \verb{#include} command cannot be used on the same line as other backticked
-expressions, and searches for \code{file} in the path \code{ipath}.
+The \verb{#include} command must appear by itself on a line, and searches for
+\code{file} in the path \code{ipath}.
 
 The function tries to guess \code{rules} from the file extension if that is
 possible. If the file extension is .c, then \code{"C"} is guessed; for .h, .hpp,
 or .cpp, \code{"C++"} is guessed; for .R, \code{"R"} is guessed; for .lua, \code{"Lua"} is
 guessed. Case is ignored for file extensions.
 
-R blocks are evaluated immediately prior to the next-occuring backticked
+R blocks are evaluated immediately prior to the next-occurring backticked
 line, so variables modified in an R block are available to any backticked
 expression following the R block. Any remaining R blocks are run after
 remaining lines are interpreted.

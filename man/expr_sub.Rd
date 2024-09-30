@@ -55,12 +55,12 @@ allow you to pass either \code{NULL} or an integer vector as the index you want
 for an expression or list of expressions.
 }
 \examples{
-expr = expr_list({ y = a * x + b })[[1]]
+expr = quote(y == a * x + b)
 expr_sub(expr, NULL)
 expr_sub(expr, 3)
 expr_sub(expr, c(3, 3))
 
-expr_sub(expr, c(3, 3)) <- expr_list({ q })[[1]]
+expr_sub(expr, c(3, 3)) <- quote(q)
 print(expr)
 }
 \seealso{

@@ -3,7 +3,8 @@
 #' @export
 expr_count = function(expr, pattern, n = Inf, env = parent.frame())
 {
-    matches = do.call(expr_match, list(substitute(expr), substitute(pattern), n, env))
+    matches = do.call(expr_match, list(substitute(expr), substitute(pattern),
+        n = n, env = env))
     if (is(matches, "expr_match") || is.null(matches)) {
         return (length(matches))
     } else { # Implies `expr` was multi-part
@@ -16,7 +17,8 @@ expr_count = function(expr, pattern, n = Inf, env = parent.frame())
 #' @export
 expr_detect = function(expr, pattern, n = Inf, env = parent.frame())
 {
-    matches = do.call(expr_match, list(substitute(expr), substitute(pattern), n, env))
+    matches = do.call(expr_match, list(substitute(expr), substitute(pattern),
+        n = n, env = env))
     if (is(matches, "expr_match") || is.null(matches)) {
         return (class(matches) == "expr_match")
     } else { # Implies `expr` was multi-part
@@ -27,9 +29,11 @@ expr_detect = function(expr, pattern, n = Inf, env = parent.frame())
 #' @usage NULL
 #' @rdname expr_match
 #' @export
-expr_extract = function(expr, pattern, what = "match", n = Inf, gather = FALSE, env = parent.frame())
+expr_extract = function(expr, pattern, what = "match", n = Inf,
+    longnames = FALSE, gather = FALSE, env = parent.frame())
 {
-    matches = do.call(expr_match, list(substitute(expr), substitute(pattern), n, env))
+    matches = do.call(expr_match, list(substitute(expr), substitute(pattern),
+        n = n, longnames = longnames, env = env))
     if (is.null(matches)) {
         return (if (gather) list() else NULL)
     } else if (is(matches, "expr_match")) {
@@ -46,5 +50,6 @@ expr_extract = function(expr, pattern, what = "match", n = Inf, gather = FALSE, 
 #' @export
 expr_locate = function(expr, pattern, n = Inf, gather = FALSE, env = parent.frame())
 {
-    do.call(expr_extract, list(substitute(expr), substitute(pattern), "loc", n, gather, env))
+    do.call(expr_extract, list(substitute(expr), substitute(pattern),
+        what = "loc", n = n, longnames = FALSE, gather = gather, env = env))
 }

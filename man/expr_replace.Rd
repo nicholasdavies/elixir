@@ -36,14 +36,14 @@ Patterns follow the syntax for \code{\link[=expr_match]{expr_match()}}.
 }
 \examples{
 # Example with alternating patterns and replacements
-expr_replace({ 1 + 2 }, ~{1}, {one}, ~{2}, {two})
+expr_replace({ 1 + 2 }, {1}, {one}, {2}, {two})
 
 # Example with patterns and replacements in a list
-expr_replace({ 1 + 2 }, patterns = expr_list(~{1}, ~{2}),
+expr_replace({ 1 + 2 }, patterns = expr_list({1}, {2}),
     replacements = expr_list({one}, {two}))
 
 # Replace with captures
-expr_replace({ 1 + 2 }, { .A + .B }, { .A - .B })
+expr_replace({ 1 + 2 }, ~{ .A + .B }, { .A - .B })
 }
 \seealso{
 \code{\link[=expr_match]{expr_match()}} to find patterns in expressions, and its cousins

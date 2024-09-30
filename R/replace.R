@@ -23,14 +23,14 @@
 #' [expr_count()], [expr_detect()], [expr_extract()], and [expr_locate()].
 #' @examples
 #' # Example with alternating patterns and replacements
-#' expr_replace({ 1 + 2 }, ~{1}, {one}, ~{2}, {two})
+#' expr_replace({ 1 + 2 }, {1}, {one}, {2}, {two})
 #'
 #' # Example with patterns and replacements in a list
-#' expr_replace({ 1 + 2 }, patterns = expr_list(~{1}, ~{2}),
+#' expr_replace({ 1 + 2 }, patterns = expr_list({1}, {2}),
 #'     replacements = expr_list({one}, {two}))
 #'
 #' # Replace with captures
-#' expr_replace({ 1 + 2 }, { .A + .B }, { .A - .B })
+#' expr_replace({ 1 + 2 }, ~{ .A + .B }, { .A - .B })
 #' @export
 expr_replace = function(expr, ..., patterns, replacements, n = Inf, env = parent.frame())
 {
@@ -57,25 +57,30 @@ expr_replace = function(expr, ..., patterns, replacements, n = Inf, env = parent
     # Do replacement
     result = lapply(expr, function(x) {
         for (j in seq_along(patterns)) {
-            if (is(patterns[[j]], "expr_alt")) {
-                if (is(replacements[[j]], "expr_alt") && length(replacements[[j]]) != length(patterns[[j]])) {
-                    stop("If there are alternatives for replacements, there must be the same number as alternatives for patterns.")
+            matches = expr_match(x, patterns[j], n = n, longnames = TRUE)
+            for (m in rev(seq_along(matches))) {
+                # If match: First get correct replacement for substitution
+                if (is(replacements[[j]], "expr_alt")) {
+                    if (!is(patterns[[j]], "expr_alt") || length(patterns[[j]]) != length(replacements[[j]])) {
+                        stop("When replacement is a set of alternatives, pattern must also be a set of alternatives of the same length.")
+                    }
+                    substitution = replacements[[j]][[matches[[m]]$alt]];
+                } else {
+                    substitution = replacements[[j]];
                 }
-                # Alternatives: try each, stop after first successful replacement.
-                for (p in seq_along(patterns[[j]])) {
-                    repl = if (is(replacements[[j]], "expr_alt")) replacements[[j]][[p]] else replacements[[j]];
-                    sub = replace_sub(x, patterns[[j]][[p]], repl, n, attr(patterns[[j]], "into")[p], env);
-                    x = sub[[1]];
-                    if (sub[[2]]) {
-                        break;
+
+                # Now replace matchable names in substitution with correct contents
+                for (k in seq_along(matches[[m]])) {
+                    nm = names(matches[[m]])[k];
+                    if (nm %like% "^\\.") {
+                        substitution = replace_name(substitution, as.name(nm), matches[[m]][[k]]);
                     }
                 }
-            } else {
-                x = replace_sub(x, patterns[[j]], replacements[[j]], n, attr(patterns, "into")[j], env)[[1]];
+                x = `expr_sub<-`(x, matches[[m]]$loc, value = substitution)
             }
         }
         return (x)
-    });
+    })
 
     # Return result
     if (is(expr, "expr_wrap")) {
@@ -84,47 +89,6 @@ expr_replace = function(expr, ..., patterns, replacements, n = Inf, env = parent
         attributes(result) = attributes(expr)
         return (result)
     }
-}
-
-# Workhorse for replace_language
-replace_sub = function(expr, pattern, replacement, n, into, env)
-{
-    replaced = FALSE;
-    if (n <= 0) {
-        return (list(expr, replaced))
-    }
-
-    if (!is.null(m <- match_sub(expr, pattern, n, FALSE, longnames = TRUE, NULL, NULL, env))) {
-        # If match: substitute placeholders in 'replacement' with matches
-        n = n - 1;
-        expr = replacement;
-        for (j in seq_along(m[[1]])) {
-            nm = names(m[[1]])[j];
-            if (nm %like% "^\\.") {
-                expr = replace_name(expr, as.name(nm), m[[1]][[j]]);
-            }
-        }
-        replaced = TRUE;
-        if (n <= 0) {
-            return (list(expr, replaced))
-        }
-    }
-
-    # Step down a level if requested
-    if (into && is.call(expr)) {
-        result = list()
-        for (i in seq_along(expr)) {
-            repl = replace_sub(expr[[i]], pattern, replacement, n, into, env)
-            expr[[i]] = repl[[1]];
-            replaced = replaced || repl[[2]];
-            n = n - repl[[2]];
-            if (n <= 0) {
-                break;
-            }
-        }
-    }
-
-    return (list(expr, replaced))
 }
 
 # Replace a name within an expression with another expression

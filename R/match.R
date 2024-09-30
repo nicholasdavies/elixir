@@ -3,12 +3,12 @@
 #' Match and extract patterns in an [expression] or a list of expressions.
 #'
 #' @usage
-#' expr_match(expr, pattern, n = Inf, env = parent.frame())
+#' expr_match(expr, pattern, n = Inf, longnames = FALSE, env = parent.frame())
 #'
 #' expr_count(expr, pattern, n = Inf, env = parent.frame())
 #' expr_detect(expr, pattern, n = Inf, env = parent.frame())
-#' expr_extract(expr, pattern, what = "match", n = Inf, gather = FALSE,
-#'     env = parent.frame())
+#' expr_extract(expr, pattern, what = "match", n = Inf,
+#'     longnames = FALSE, gather = FALSE, env = parent.frame())
 #' expr_locate(expr, pattern, n = Inf, gather = FALSE,
 #'     env = parent.frame())
 #' @param expr Input. An [expression], [expr_list], or [list()] of expressions.
@@ -17,9 +17,12 @@
 #'     syntax (see [expression]) can be used to specify alternatives.
 #' @param n Maximum number of matches to make in each expression; default is
 #'     `Inf`.
+#' @param longnames Normally, patterns like `.A`, `..B`, `...C`, etc, are named
+#'     just `A`, `B`, `C`, etc., in the returned matches, without the dot(s)
+#'     before each name. With `longnames = TRUE`, the dots are kept.
 #' @param what (`expr_extract` only) Name of the pattern to extract (or
 #'     `"match"`, the default, to extract the entire match).
-#' @param gather (`expr_extract` and `expr_detect` only) Whether to only return
+#' @param gather (`expr_extract` and `expr_locate` only) Whether to only return
 #'     the successful matches, in a single unnested list.
 #' @param env Environment for injections in `expr`, `pattern` (see
 #'     [expression]).
@@ -49,7 +52,7 @@
 #' `expr_match` is the most general of the bunch. As an example, suppose you
 #' had an expression containing the sum of two numbers (e.g.
 #' `3.14159 + 2.71828`) and you wanted to extract the two numbers. You
-#' could use the pattern `.A + .B` to extract the match:
+#' could use the pattern `{ .A + .B }` to extract the match:
 #'
 #' ```
 #' expr_match({ 3.14159 + 2.71828 }, { .A + .B })
@@ -116,14 +119,15 @@
 #' require the whole symbol to be wrapped in backticks, as in the examples
 #' above, so that they parse as symbols.
 #'
-#' ## Recursing into expressions
+#' ## Anchoring versus recursing into expressions
 #'
-#' If you want your pattern to be able to match not just at the "outer level"
-#' of your expression(s), but also to match to sub-expressions within, use the
-#' tilde (`~`) outside the braces (see [expression] for details). For example,
-#' `expr_match({1 + 2 + 3 + 4}, {..A + .B})` only gives one match, to the
+#' If you want your anchor your pattern, i.e. ensure that the pattern will only
+#' match at the "outer level" of your expression(s), without matching to any
+#' sub-expressions within, use a tilde (`~`) outside the braces (see
+#' [expression] for details). For example,
+#' `expr_match({1 + 2 + 3 + 4}, ~{..A + .B})` only gives one match, to the
 #' addition at the outermost level of `1 + 2 + 3` plus `4`, but
-#' `expr_match({1 + 2 + 3 + 4}, ~{..A + .B})` also matches to the inner
+#' `expr_match({1 + 2 + 3 + 4}, {..A + .B})` also matches to the inner
 #' additions of `1 + 2` plus `3` and `1` plus `2`.
 #'
 #' ## Alternatives
@@ -151,7 +155,7 @@
 #' `which`, those can be extracted instead. For example:
 #'
 #' ```
-#' expr_extract(expr_list({(a+b)+(x+y)}, {"H"*"I"}, {3+4}), ~{.A + .B}, "A")
+#' expr_extract(expr_list({(a+b)+(x+y)}, {"H"*"I"}, {3+4}), {.A + .B}, "A")
 #' ```
 #'
 #' gives `list(list(quote(a), quote(x)), NULL, list(3))`.
@@ -171,7 +175,7 @@
 #' # match to one of several alternatives
 #' expr_match({ 5 - 1 }, { .A + .B } ? { .A - .B })
 #' @export
-expr_match = function(expr, pattern, n = Inf, env = parent.frame())
+expr_match = function(expr, pattern, n = Inf, longnames = FALSE, env = parent.frame())
 {
     # Parse arguments
     expr = do.call(do_parse_simple, list(substitute(expr), env));
@@ -180,31 +184,21 @@ expr_match = function(expr, pattern, n = Inf, env = parent.frame())
         stop("expr_match requires one pattern.")
     }
 
-    # Do matching
     if (is(pattern[[1]], "expr_alt")) {
-        # Alternatives: try each, return first match.
-        result = lapply(seq_along(expr), function(i) {
-            loc_start = if (is(expr, "expr_wrap")) NULL else i
-            for (p in seq_along(pattern[[1]])) {
-                check_pattern(pattern[[1]][[p]]);
-                match = match_sub(expr[[i]], pattern[[1]][[p]], n, attr(pattern[[1]], "into")[p], longnames = FALSE, loc_start, NULL, env);
-                if (!is.null(match)) {
-                    return (structure(lapply(match, function(m) c(list(alt = p), m[!names(m) %like% "^_"])), class = "expr_match"))
-                }
-            }
-            return (NULL)
-        });
+        into = attr(pattern[[1]], "into")
     } else {
-        result = lapply(seq_along(expr), function(i) {
-            loc_start = if (is(expr, "expr_wrap")) NULL else i
-            check_pattern(pattern[[1]]);
-            match = match_sub(expr[[i]], pattern[[1]], n, attr(pattern, "into"), longnames = FALSE, loc_start, NULL, env);
-            if (!is.null(match)) {
-                return (structure(lapply(match, function(m) m[!names(m) %like% "^_"]), class = "expr_match"))
-            }
-            return (NULL)
-        });
+        into = attr(pattern, "into")
     }
+
+    # Do matching
+    result = lapply(seq_along(expr), function(i) {
+        loc_start = if (is(expr, "expr_wrap")) NULL else i
+        match = match_sub(expr[[i]], pattern[[1]], n, into, longnames = longnames, loc_start, NULL, env);
+        if (!is.null(match)) {
+            return (structure(lapply(match, function(m) m[!names(m) %like% "^_"]), class = "expr_match"))
+        }
+        return (NULL)
+    });
 
     # Return result
     if (is(expr, "expr_wrap")) {
@@ -253,75 +247,99 @@ match_sub = function(expr, pattern, n, into, longnames, loc, parent_match, env)
         return (NULL)
     }
 
+    # Define subfunction to perform matching
     tpat = "^\\.([a-zA-Z_][a-zA-Z0-9._]*)(:([^/|]+))?((/|\\|)(.*))?$"; # token pattern
     xpat = "^\\.\\.([a-zA-Z_][a-zA-Z0-9._]*)$"; # expression pattern
     apat = "^\\.\\.\\.([a-zA-Z_][a-zA-Z0-9._]*)$"; # args pattern
     name = function(pre, nm) if (longnames) paste0(pre, nm) else nm;
 
-    # 1. First, attempt to match pattern to entire expr. How this is done
-    # depends on the format of the pattern:
-    match = NULL;
+    do_match = function(pattern)
+    {
+        check_pattern(pattern);
 
-    if (is.call(pattern) && length(pattern) == 2 && is.name(pattern[[2]]) &&
-            !is.na((am <- stringr::str_match(as.character(pattern[[2]]), apat))[1, 1])) {
-        # 1A. Pattern is f(...A) or .A(...B)
-        if (is.call(expr)) {
-            if (!is.na((tm <- stringr::str_match(as.character(pattern[[1]]), tpat))[1, 1])) {
-                # Pattern's function name seeks token match e.g. .A(...X), .A:name(...X), etc
-                if (token_match(expr[[1]], tm, parent_match, env)) {
-                    # Sought token match succeeds
+        # How this is done depends on the format of the pattern (A-F):
+        if (is.call(pattern) && length(pattern) == 2 && is.name(pattern[[2]]) &&
+                !is.na((am <- stringr::str_match(as.character(pattern[[2]]), apat))[1, 1])) {
+            # A. Pattern is f(...A) or .A(...B)
+            if (is.call(expr)) {
+                if (!is.na((tm <- stringr::str_match(as.character(pattern[[1]]), tpat))[1, 1])) {
+                    # Pattern's function name seeks token match e.g. .A(...X), .A:name(...X), etc
+                    if (token_match(expr[[1]], tm, parent_match, env)) {
+                        # Sought token match succeeds
+                        match = build_match(expr, loc,
+                            list(expr[[1]], as.list(expr[-1])),
+                            c(name(".", tm[, 2]), name("...", am[, 2])));
+                    }
+                } else if (pattern[[1]] == expr[[1]]) {
+                    # Pattern's function name seeks exact match and succeeds
                     match = build_match(expr, loc,
-                        list(expr[[1]], as.list(expr[-1])),
-                        c(name(".", tm[, 2]), name("...", am[, 2])));
-                }
-            } else if (pattern[[1]] == expr[[1]]) {
-                # Pattern's function name seeks exact match and succeeds
-                match = build_match(expr, loc,
-                    list(as.list(expr[-1])),
-                    name("...", am[, 2]));
-            }
-        }
-    } else if (length(pattern) > 1) {
-        # 1B. Pattern has multiple parts
-        if (length(expr) == length(pattern) && identical(class(expr), class(pattern))) {
-            match1 = list(match = expr, loc = loc);
-            match2 = NULL;
-            for (i in seq_along(expr)) {
-                m = match_sub(expr[[i]], pattern[[i]], 1, FALSE, longnames, c(loc, i),
-                    c(if (is.null(parent_match)) match1 else parent_match, match2), env);
-                if (is.null(m)) {
-                    # no match for part i: match has failed
-                    match1 = NULL;
-                    match2 = NULL;
-                    break;
-                } else if (is.list(m)) {
-                    # match for part i: match is succeeding so far
-                    match2 = c(match2, m[[1]][-(1:2)]);
+                        list(as.list(expr[-1])),
+                        name("...", am[, 2]));
                 }
             }
-            match = c(match1, match2);
+        } else if (length(pattern) > 1) {
+            # B. Pattern has multiple parts
+            if (length(expr) == length(pattern) && identical(class(expr), class(pattern))) {
+                match1 = list(match = expr, loc = loc);
+                match2 = NULL;
+                for (i in seq_along(expr)) {
+                    m = match_sub(expr[[i]], pattern[[i]], 1, FALSE, longnames, c(loc, i),
+                        c(if (is.null(parent_match)) match1 else parent_match, match2), env);
+                    if (is.null(m)) {
+                        # no match for part i: match has failed
+                        match1 = NULL;
+                        match2 = NULL;
+                        break;
+                    } else if (is.list(m)) {
+                        # match for part i: match is succeeding so far
+                        match2 = c(match2, m[[1]][-(1:2)]);
+                    }
+                }
+                match = c(match1, match2);
+            }
+        } else if (is.name(pattern) && !is.na((m <- stringr::str_match(as.character(pattern), xpat))[1, 1])) {
+            # C. Pattern is ..A -- match any expression
+            match = build_match(expr, loc, list(expr), name("..", m[, 2]));
+        } else if (is.name(pattern) && !is.na((tm <- stringr::str_match(as.character(pattern), tpat))[1, 1])) {
+            # D. Pattern is .A -- match token
+            if ((is.atomic(expr) || is.name(expr)) && token_match(expr, tm, parent_match, env)) {
+                match = build_match(expr, loc, list(expr), name(".", tm[, 2]));
+            }
+        } else if (is.call(pattern) && !is.na((tm <- stringr::str_match(as.character(pattern), tpat))[1, 1])) {
+            # E. Pattern is .A() -- match no-arg call
+            if (is.call(expr) && token_match(expr, tm, parent_match, env)) {
+                match = build_match(expr, loc, list(expr[[1]]), name(".", tm[, 2]));
+            }
+        } else {
+            # F. Any other single-token pattern (i.e. a literal)
+            if (identical(pattern, expr)) {
+                match = list(match = expr, loc = loc);
+            }
         }
-    } else if (is.name(pattern) && !is.na((m <- stringr::str_match(as.character(pattern), xpat))[1, 1])) {
-        # 1C. Pattern is ..A -- match any expression
-        match = build_match(expr, loc, list(expr), name("..", m[, 2]));
-    } else if (is.name(pattern) && !is.na((tm <- stringr::str_match(as.character(pattern), tpat))[1, 1])) {
-        # 1D. Pattern is .A -- match token
-        if ((is.atomic(expr) || is.name(expr)) && token_match(expr, tm, parent_match, env)) {
-            match = build_match(expr, loc, list(expr), name(".", tm[, 2]));
-        }
-    } else if (is.call(pattern) && !is.na((tm <- stringr::str_match(as.character(pattern), tpat))[1, 1])) {
-        # 1E. Pattern is .A() -- match no-arg call
-        if (is.call(expr) && token_match(expr, tm, parent_match, env)) {
-            match = build_match(expr, loc, list(expr[[1]]), name(".", tm[, 2]));
-        }
-    } else {
-        # 1F. Any other single-token pattern (i.e. a literal)
-        if (identical(pattern, expr)) {
-            match = list(match = expr, loc = loc);
-        }
+        return (match)
     }
 
-    # Package first match, if there is one, in a "list of all matches"
+    # 1. First, attempt to match pattern to entire expr.
+    match = NULL;
+
+    # Do matching
+    if (is(pattern, "expr_alt")) {
+        # Alternative expressions: try each, get first matching one.
+        for (p in seq_along(pattern)) {
+            # Skip alternatives marked as not for matching (see 2. below)
+            if (!is.na(into[p])) {
+                match = do_match(pattern[[p]]);
+                if (!is.null(match)) {
+                    match = c(alt = p, match)
+                    break;
+                }
+            }
+        }
+    } else {
+        match = do_match(pattern);
+    }
+
+    # Package "top-level" match, if there is one, in a "list of all matches"
     if (!is.null(match)) {
         match = list(match)
         n = n - 1
@@ -330,17 +348,25 @@ match_sub = function(expr, pattern, n, into, longnames, loc, parent_match, env)
         }
     }
 
-    # If still looking for matches, and can go into expression, do so
-    if (into && is.call(expr)) {
+    # 2. Now attempt to match to subcomponents of expr -- i.e. if still looking
+    # for matches, and can go into expression, then do so
+    if (is(pattern, "expr_alt")) {
+        # For those alternatives which we should not use for recursion, set
+        # "into" to NA to mark that alternative as something we should not try
+        # to match to.
+        into[!into] <- NA
+        attr(pattern, "into") <- into
+    }
+    if (any(into, na.rm = TRUE) && is.call(expr)) {
         for (i in seq_along(expr)) {
             m = match_sub(expr[[i]], pattern, n, into, longnames, c(loc, i), NULL, env);
             if (!is.null(m)) {
                 n = n - 1
+                match = c(match, m);
                 if (n <= 0) {
-                    return (m)
+                    break;
                 }
             }
-            match = c(match, m);
         }
     }
 

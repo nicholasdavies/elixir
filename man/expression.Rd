@@ -20,8 +20,8 @@ Elixir does not use this type; see \code{\link[=expr_list]{expr_list()}} instead
 
 \if{html}{\out{<div class="sourceCode">}}\preformatted{expr_list(number = \{ `.A:numeric` \} ? \{ `.A:integer` \},
     string = \{ `.A:character` \}, symbol = \{ `.A:name` \})
-expr_match(\{ 1 * 2 \}, \{ .A * .B \})
-expr_match(\{ 1 * 2 \}, ~\{ `.A:numeric` \})
+expr_match(\{ 1 * 2 \}, ~\{ .A * .B \})
+expr_match(\{ 1 * 2 \}, \{ `.A:numeric` \})
 expr_replace(\{ y = a*x^3 + b*x^2 + c*x^1 + d*x^0 \},
     \{ ..X ^ ..N \}, \{ pow(..X, ..N) \})
 }\if{html}{\out{</div>}}
@@ -89,16 +89,17 @@ needs to be either a single expression, or a set of alternative expressions
 which has the same number of alternatives as in the pattern.
 
 You can also use the tilde operator \code{~} to specify that a given pattern
-should "recurse into" an expression. For example, in
+should be "anchored" at the top level of an expression, and will not
+"recurse into" the expression. For example, in
 
 \if{html}{\out{<div class="sourceCode">}}\preformatted{exprs = expr_list(2, 5, \{1 + 4\})
-expr_match(exprs, \{ `.A:numeric` \})
+expr_match(exprs, ~\{ `.A:numeric` \})
 }\if{html}{\out{</div>}}
 
 only the numbers \code{2} and \code{5} will match. However, in
 
 \if{html}{\out{<div class="sourceCode">}}\preformatted{exprs = expr_list(2, 5, \{1 + 4\})
-expr_match(exprs, ~\{ `.A:numeric` \})
+expr_match(exprs, \{ `.A:numeric` \})
 }\if{html}{\out{</div>}}
 
 all numbers \code{2}, \code{5}, \code{1} and \code{4} will match, because the \code{pattern} can
