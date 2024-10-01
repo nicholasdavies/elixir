@@ -6,11 +6,7 @@
 #' another programming language, according to the supplied
 #' [rules][elixir-rules].
 #'
-#' This function is experimental and is not exported; it can be invoked using
-#' `elixir:::translate`.
-#'
-#' @usage
-#' elixir:::translate(expr, rules, env = parent.frame())
+#' This function is experimental.
 #'
 #' @details
 #' The parameter `rules` can be a character string naming a "built-in"
@@ -57,7 +53,8 @@
 #'     [expression][elixir-expression]).
 #' @return The translated expression as a single character string.
 #' @examples
-#' elixir:::translate({x ^ y}, "C++")
+#' translate({x ^ y}, "C++")
+#' @export
 translate = function(expr, rules, env = parent.frame())
 {
     # Get rules

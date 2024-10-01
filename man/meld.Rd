@@ -51,8 +51,7 @@ The interpreted text as a single character string.
 as lines of text passed via unnamed arguments and returns these lines of
 text after performing substitutions of R code.
 
-This function is experimental and is not exported; it can be invoked using
-\code{elixir:::meld}.
+This function is experimental.
 }
 \details{
 First, any blocks of text starting with the delimiter \verb{/***R} and
@@ -95,7 +94,7 @@ a separator. This allows backticked expressions to apply over multiple
 lines.
 }
 \examples{
-elixir:::meld(
+meld(
     "/***R",
     "names = c('a', 'b', 'c');",
     "dontdothis = NULL;",

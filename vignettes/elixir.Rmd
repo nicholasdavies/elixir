@@ -70,8 +70,6 @@ predator birth rate.
 One could implement this in R using the package `deSolve`:
 
 ```{r, eval = TRUE}
-library(deSolve)
-
 y <- c(x = 1, y = 1)
 times <- 0:100
 parms <- c(alpha = 1/6, beta = 1/3, gamma = 0.25, delta = 0.25) 
@@ -85,9 +83,13 @@ func <- function(t, y, parms)
     })
 }
 
-sol <- ode(y, times, func, parms) 
-matplot(sol[, 1], sol[, -1], type = "l")
+# Run this with:
+# sol <- deSolve::ode(y, times, func, parms) 
+# matplot(sol[, 1], sol[, -1], type = "l")
 ```
+
+The usage of the above with the `deSolve` package is commented out so that
+`deSolve` isn't required to build this vignette.
 
 Let's suppose that instead we want to start with a set of quoted
 statements like this:
@@ -270,8 +272,6 @@ Putting it all together into a wrapper function, we get something like
 this:
 
 ```{r}
-library(deSolve)
-
 run_ode <- function(system)
 {
     # Get times
@@ -306,8 +306,9 @@ run_ode <- function(system)
         }
     ))
     
-    sol <- ode(y, times, func, parms) 
-    matplot(sol[, 1], sol[, -1], type = "l")
+    # uncomment if deSolve is available:
+    # sol <- deSolve::ode(y, times, func, parms) 
+    # matplot(sol[, 1], sol[, -1], type = "l")
 }
 
 system <- quote({
@@ -343,6 +344,5 @@ expression; the one advantage this has over `[[` is that it allows you to use
 `lang2str()` does the opposite of `str2lang()`; it is like `deparse1()` which
 is new since R 4.0.0, but with `collapse = ""` instead of `collapse = " "`.
 
-Finally, `meld()`, `translate()`, and `reindent()` are functions for 
-constructing code using R. They are currently not exported from the `elixir`
-namespace, but they are documented.
+Finally, `meld()`, `translate()`, and `reindent()` are various experimental
+functions for constructing code using R.

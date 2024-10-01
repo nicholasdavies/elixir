@@ -4,7 +4,7 @@
 \alias{reindent}
 \title{Reindent some lines of code}
 \usage{
-elixir:::reindent(lines, rules, tab = "    ", start = 0L)
+reindent(lines, rules, tab = "    ", start = 0L)
 }
 \arguments{
 \item{lines}{Character vector with lines of text; can have internal
@@ -33,8 +33,7 @@ of code and, according to its understanding of the rules for that language,
 reindent those lines. This is intended to help prettify automatically
 generated code.
 
-This function is experimental and is not exported; it can be invoked using
-\code{elixir:::reindent}.
+This function is experimental.
 }
 \details{
 Conceptually, the function first ignores any comments or string literals.
@@ -54,7 +53,7 @@ the \verb{else} keyword both decreases and increases the indent level.
 Some unusual character sequences may break \code{\link[=reindent]{reindent()}}.
 }
 \examples{
-elixir:::reindent(
+reindent(
     c(
         "if x == 1 then",
         "print 'one'",

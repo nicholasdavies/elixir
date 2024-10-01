@@ -6,11 +6,7 @@
 #' reindent those lines. This is intended to help prettify automatically
 #' generated code.
 #'
-#' This function is experimental and is not exported; it can be invoked using
-#' `elixir:::reindent`.
-#'
-#' @usage
-#' elixir:::reindent(lines, rules, tab = "    ", start = 0L)
+#' This function is experimental.
 #'
 #' @details
 #' Conceptually, the function first ignores any comments or string literals.
@@ -43,7 +39,7 @@
 #' @param start Indent level to start at.
 #' @return Reindented lines as a character vector.
 #' @examples
-#' elixir:::reindent(
+#' reindent(
 #'     c(
 #'         "if x == 1 then",
 #'         "print 'one'",

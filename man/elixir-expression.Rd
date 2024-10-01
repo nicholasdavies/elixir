@@ -43,15 +43,15 @@ variable or pass it to a function, you need to use \code{\link[base:substitute]{
 
 So, for example, rather than
 
-\code{elixir:::translate(quote(x ^ y), "C++")}
+\code{translate(quote(x ^ y), "C++")}
 
 you can write
 
-\code{elixir:::translate({ x ^ y }, "C++")}.
+\code{translate({ x ^ y }, "C++")}.
 
 This only works if the braces are provided "directly"; that is, in
 
-\verb{expr <- quote(\{ x ^ y \}); elixir:::translate(expr, "C++")},
+\verb{expr <- quote(\{ x ^ y \}); translate(expr, "C++")},
 
 the braces are not interpreted in any special way.
 

@@ -5,18 +5,7 @@
 #' as lines of text passed via unnamed arguments and returns these lines of
 #' text after performing substitutions of R code.
 #'
-#' This function is experimental and is not exported; it can be invoked using
-#' `elixir:::meld`.
-#'
-#' @usage
-#' meld(
-#'   ...,
-#'   file = NULL,
-#'   rules = NULL,
-#'   reindent = TRUE,
-#'   ipath = ".",
-#'   env = rlang::env_clone(parent.frame())
-#' )
+#' This function is experimental.
 #'
 #' @details
 #' First, any blocks of text starting with the delimiter `/***R` and
@@ -79,7 +68,7 @@
 #' so that new declarations do not pollute the environment in question.
 #' @return The interpreted text as a single character string.
 #' @examples
-#' elixir:::meld(
+#' meld(
 #'     "/***R",
 #'     "names = c('a', 'b', 'c');",
 #'     "dontdothis = NULL;",
@@ -90,6 +79,7 @@
 #'     "    double `dontdothis` = this_doesnt_matter;",
 #'     "    return a + b + c;",
 #'     "}")
+#' @export
 meld = function(..., file = NULL, rules = NULL, reindent = TRUE, ipath = ".", env = rlang::env_clone(parent.frame()))
 {
     # Get rules

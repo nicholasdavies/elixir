@@ -4,7 +4,7 @@
 \alias{translate}
 \title{Translate an R expression}
 \usage{
-elixir:::translate(expr, rules, env = parent.frame())
+translate(expr, rules, env = parent.frame())
 }
 \arguments{
 \item{expr}{\link[=elixir-expression]{Expression} or list of
@@ -26,8 +26,7 @@ translates it into a character string giving the equivalent expression in
 another programming language, according to the supplied
 \link[=elixir-rules]{rules}.
 
-This function is experimental and is not exported; it can be invoked using
-\code{elixir:::translate}.
+This function is experimental.
 }
 \details{
 The parameter \code{rules} can be a character string naming a "built-in"
@@ -70,5 +69,5 @@ It may be helpful to inspect \code{elixir:::ruleset} to clarify the above
 format.
 }
 \examples{
-elixir:::translate({x ^ y}, "C++")
+translate({x ^ y}, "C++")
 }
