@@ -57,7 +57,7 @@ expr_replace = function(expr, ..., patterns, replacements, n = Inf, env = parent
     # Do replacement
     result = lapply(expr, function(x) {
         for (j in seq_along(patterns)) {
-            matches = expr_match(x, patterns[j], n = n, longnames = TRUE)
+            matches = expr_match(x, patterns[j], n = n, dotnames = TRUE)
             for (m in rev(seq_along(matches))) {
                 # If match: First get correct replacement for substitution
                 if (is(replacements[[j]], "expr_alt")) {

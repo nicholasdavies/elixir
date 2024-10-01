@@ -4,12 +4,12 @@
 #'
 #' @usage
 #' expr_match(expr, pattern, n = Inf,
-#'     longnames = FALSE, env = parent.frame())
+#'     dotnames = FALSE, env = parent.frame())
 #'
 #' expr_count(expr, pattern, n = Inf, env = parent.frame())
 #' expr_detect(expr, pattern, n = Inf, env = parent.frame())
 #' expr_extract(expr, pattern, what = "match", n = Inf,
-#'     longnames = FALSE, gather = FALSE, env = parent.frame())
+#'     dotnames = FALSE, gather = FALSE, env = parent.frame())
 #' expr_locate(expr, pattern, n = Inf, gather = FALSE,
 #'     env = parent.frame())
 #' @param expr Input. An [expression], [expr_list], or [list()] of expressions.
@@ -18,9 +18,9 @@
 #'     syntax (see [expression]) can be used to specify alternatives.
 #' @param n Maximum number of matches to make in each expression; default is
 #'     `Inf`.
-#' @param longnames Normally, patterns like `.A`, `..B`, `...C`, etc, are named
+#' @param dotnames Normally, patterns like `.A`, `..B`, `...C`, etc, are named
 #'     just `A`, `B`, `C`, etc., in the returned matches, without the dot(s)
-#'     before each name. With `longnames = TRUE`, the dots are kept.
+#'     before each name. With `dotnames = TRUE`, the dots are kept.
 #' @param what (`expr_extract` only) Name of the pattern to extract (or
 #'     `"match"`, the default, to extract the entire match).
 #' @param gather (`expr_extract` and `expr_locate` only) Whether to only return
@@ -210,7 +210,7 @@
 #' # match to one of several alternatives
 #' expr_match({ 5 - 1 }, { .A + .B } ? { .A - .B })
 #' @export
-expr_match = function(expr, pattern, n = Inf, longnames = FALSE, env = parent.frame())
+expr_match = function(expr, pattern, n = Inf, dotnames = FALSE, env = parent.frame())
 {
     # Parse arguments
     expr = do.call(do_parse_simple, list(substitute(expr), env));
@@ -228,7 +228,7 @@ expr_match = function(expr, pattern, n = Inf, longnames = FALSE, env = parent.fr
     # Do matching
     result = lapply(seq_along(expr), function(i) {
         loc_start = if (is(expr, "expr_wrap")) NULL else i
-        match = match_sub(expr[[i]], pattern[[1]], n, into, longnames = longnames, loc_start, NULL, env);
+        match = match_sub(expr[[i]], pattern[[1]], n, into, dotnames = dotnames, loc_start, NULL, env);
         if (!is.null(match)) {
             return (structure(lapply(match, function(m) m[!names(m) %like% "^_"]), class = "expr_match"))
         }
@@ -284,7 +284,7 @@ build_match = function(match, loc, captures, capture_names)
 }
 
 # Workhorse for match_expr
-match_sub = function(expr, pattern, n, into, longnames, loc, parent_match, env)
+match_sub = function(expr, pattern, n, into, dotnames, loc, parent_match, env)
 {
     if (n <= 0) {
         return (NULL)
@@ -294,7 +294,7 @@ match_sub = function(expr, pattern, n, into, longnames, loc, parent_match, env)
     tpat = "^\\.([a-zA-Z_][a-zA-Z0-9._]*)(:([^/|]+))?((/|\\|)(.*))?$"; # token pattern
     xpat = "^\\.\\.([a-zA-Z_][a-zA-Z0-9._]*)$"; # expression pattern
     apat = "^\\.\\.\\.([a-zA-Z_][a-zA-Z0-9._]*)$"; # args pattern
-    name = function(pre, nm) if (longnames) paste0(pre, nm) else nm;
+    name = function(pre, nm) if (dotnames) paste0(pre, nm) else nm;
 
     do_match = function(pattern)
     {
@@ -344,7 +344,7 @@ match_sub = function(expr, pattern, n, into, longnames, loc, parent_match, env)
                         match2 = NULL;
                         break;
                     }
-                    m = match_sub(expr[[i]], pattern[[i]], 1, FALSE, longnames, c(loc, i),
+                    m = match_sub(expr[[i]], pattern[[i]], 1, FALSE, dotnames, c(loc, i),
                         c(if (is.null(parent_match)) match1 else parent_match, match2), env);
                     if (is.null(m)) {
                         # no match for part i: match has failed
@@ -422,7 +422,7 @@ match_sub = function(expr, pattern, n, into, longnames, loc, parent_match, env)
     }
     if (any(into, na.rm = TRUE) && is.call(expr)) {
         for (i in seq_along(expr)) {
-            m = match_sub(expr[[i]], pattern, n, into, longnames, c(loc, i), NULL, env);
+            m = match_sub(expr[[i]], pattern, n, into, dotnames, c(loc, i), NULL, env);
             if (!is.null(m)) {
                 n = n - 1
                 match = c(match, m);

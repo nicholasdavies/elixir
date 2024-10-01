@@ -8,12 +8,13 @@
 \alias{expr_locate}
 \title{Find patterns in expressions}
 \usage{
-expr_match(expr, pattern, n = Inf, longnames = FALSE, env = parent.frame())
+expr_match(expr, pattern, n = Inf,
+    dotnames = FALSE, env = parent.frame())
 
 expr_count(expr, pattern, n = Inf, env = parent.frame())
 expr_detect(expr, pattern, n = Inf, env = parent.frame())
 expr_extract(expr, pattern, what = "match", n = Inf,
-    longnames = FALSE, gather = FALSE, env = parent.frame())
+    dotnames = FALSE, gather = FALSE, env = parent.frame())
 expr_locate(expr, pattern, n = Inf, gather = FALSE,
     env = parent.frame())
 }
@@ -27,9 +28,9 @@ syntax (see \link{expression}) can be used to specify alternatives.}
 \item{n}{Maximum number of matches to make in each expression; default is
 \code{Inf}.}
 
-\item{longnames}{Normally, patterns like \code{.A}, \code{..B}, \code{...C}, etc, are named
+\item{dotnames}{Normally, patterns like \code{.A}, \code{..B}, \code{...C}, etc, are named
 just \code{A}, \code{B}, \code{C}, etc., in the returned matches, without the dot(s)
-before each name. With \code{longnames = TRUE}, the dots are kept.}
+before each name. With \code{dotnames = TRUE}, the dots are kept.}
 
 \item{env}{Environment for injections in \code{expr}, \code{pattern} (see
 \link{expression}).}
@@ -137,6 +138,38 @@ require the whole symbol to be wrapped in backticks, as in the examples
 above, so that they parse as symbols.
 }
 
+\subsection{Matching function arguments}{
+
+If you wish to match a single, unnamed function argument, you can use a
+capture token of the form \code{.A} (single-token argument) or \code{..B} (expression
+argument). To match all arguments, including named ones, use a capture token
+of the form \code{...C}. For example, these all match:
+
+\if{html}{\out{<div class="sourceCode">}}\preformatted{expr_match(\{ myfunc() \}, \{ .F() \})
+expr_match(\{ myfunc(1) \}, \{ .F(.X) \})
+expr_match(\{ myfunc(1 + 1) \}, \{ myfunc(..X) \})
+expr_match(\{ myfunc(1, 2) \}, \{ .F(.X, .Y) \})
+expr_match(\{ myfunc() \}, \{ myfunc(...A) \})
+expr_match(\{ myfunc(1) \}, \{ .F(...A) \})
+expr_match(\{ myfunc(2, c = 3) \}, \{ myfunc(...A) \})
+}\if{html}{\out{</div>}}
+
+but these do not:
+
+\if{html}{\out{<div class="sourceCode">}}\preformatted{expr_match(\{ myfunc() \}, \{ .F(.X) \})
+expr_match(\{ myfunc() \}, \{ .F(..X) \})
+expr_match(\{ myfunc(a = 1) \}, \{ .F(.X) \})
+expr_match(\{ myfunc(a = 1 + 1) \}, \{ .F(..X) \})
+expr_match(\{ myfunc(1,2) \}, \{ .F(..X) \})
+expr_match(\{ myfunc(a = 1, b = 2) \}, \{ .F(...X, ...Y) \})
+}\if{html}{\out{</div>}}
+
+There may be support for named arguments in patterns in the future, e.g. a
+pattern such as \code{{ f(a = .X) }} that would match an expression like
+\code{{ f(a = 1) }}, but that is currently not supported. So currently you can
+only match named function arguments using the \code{...X} syntax.
+}
+
 \subsection{Anchoring versus recursing into expressions}{
 
 If you want your anchor your pattern, i.e. ensure that the pattern will only
@@ -174,7 +207,8 @@ found.
 complete matches. Or, by specifing a capture token name in the argument
 \code{which}, those can be extracted instead. For example:
 
-\if{html}{\out{<div class="sourceCode">}}\preformatted{expr_extract(expr_list(\{(a+b)+(x+y)\}, \{"H"*"I"\}, \{3+4\}), \{.A + .B\}, "A")
+\if{html}{\out{<div class="sourceCode">}}\preformatted{expr_extract(expr_list(\{(a+b)+(x+y)\},
+    \{"H"*"I"\}, \{3+4\}), \{.A + .B\}, "A")
 }\if{html}{\out{</div>}}
 
 gives \code{list(list(quote(a), quote(x)), NULL, list(3))}.

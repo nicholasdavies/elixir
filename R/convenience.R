@@ -30,10 +30,10 @@ expr_detect = function(expr, pattern, n = Inf, env = parent.frame())
 #' @rdname expr_match
 #' @export
 expr_extract = function(expr, pattern, what = "match", n = Inf,
-    longnames = FALSE, gather = FALSE, env = parent.frame())
+    dotnames = FALSE, gather = FALSE, env = parent.frame())
 {
     matches = do.call(expr_match, list(substitute(expr), substitute(pattern),
-        n = n, longnames = longnames, env = env))
+        n = n, dotnames = dotnames, env = env))
     if (is.null(matches)) {
         return (if (gather) list() else NULL)
     } else if (is(matches, "expr_match")) {
@@ -51,5 +51,5 @@ expr_extract = function(expr, pattern, what = "match", n = Inf,
 expr_locate = function(expr, pattern, n = Inf, gather = FALSE, env = parent.frame())
 {
     do.call(expr_extract, list(substitute(expr), substitute(pattern),
-        what = "loc", n = n, longnames = FALSE, gather = gather, env = env))
+        what = "loc", n = n, dotnames = FALSE, gather = gather, env = env))
 }

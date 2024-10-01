@@ -15,7 +15,7 @@ test_that("match convenience wrappers work", {
         list(list(quote(b * x)), NULL, list(quote(4 * a), quote(2 * a))))
     expect_identical(expr_extract(exprs, { .A * .B }, "A"),
         list(list(quote(b)), NULL, list(quote(4), quote(2))))
-    expect_identical(expr_extract(exprs, { .A * .B }, ".A", longnames = TRUE),
+    expect_identical(expr_extract(exprs, { .A * .B }, ".A", dotnames = TRUE),
         list(list(quote(b)), NULL, list(quote(4), quote(2))))
     expect_identical(expr_locate(exprs, { .A * .B }),
         list(list(c(1L, 3L, 2L, 3L)), NULL, list(c(3L, 3L, 2L, 2L, 3L, 2L, 3L, 2L), c(3L, 3L, 3L, 2L))))
