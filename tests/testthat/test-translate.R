@@ -1,11 +1,11 @@
-test_that("expr_translate works", {
+test_that("translate works", {
     exprs = expr_list(
         { 1 / 3 },
         { a != n }
     )
 
-    expect_identical(expr_translate(exprs, "C"),   list("1. / 3.", "a != n"))
-    expect_identical(expr_translate(exprs, "Lua"), list("1 / 3",   "a ~= n"))
+    expect_identical(translate(exprs, "C"),   list("1. / 3.", "a != n"))
+    expect_identical(translate(exprs, "Lua"), list("1 / 3",   "a ~= n"))
 })
 
 test_that("lang2str works", {

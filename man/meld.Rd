@@ -18,8 +18,8 @@ meld(
 
 \item{file}{File to be read in as the text.}
 
-\item{rules}{Which \link{rules} to follow. You can pass a string from among
-\code{"C"}, \code{"C++"}, \code{"Lua"}, or \code{"R"}, or a list with elements:
+\item{rules}{Which \link[=elixir-rules]{rules} to follow. You can pass a string
+from among \code{"C"}, \code{"C++"}, \code{"Lua"}, or \code{"R"}, or a list with elements:
 \itemize{
 \item \code{comment} Character vector for comments (used when backticked lines are
 skipped); either NA for no comments, one string for end-of-line comments or
@@ -50,6 +50,9 @@ The interpreted text as a single character string.
 \code{meld} reads a specially-formatted file from filename \code{file} or
 as lines of text passed via unnamed arguments and returns these lines of
 text after performing substitutions of R code.
+
+This function is experimental and is not exported; it can be invoked using
+\code{elixir:::meld}.
 }
 \details{
 First, any blocks of text starting with the delimiter \verb{/***R} and
@@ -92,7 +95,7 @@ a separator. This allows backticked expressions to apply over multiple
 lines.
 }
 \examples{
-meld(
+elixir:::meld(
     "/***R",
     "names = c('a', 'b', 'c');",
     "dontdothis = NULL;",

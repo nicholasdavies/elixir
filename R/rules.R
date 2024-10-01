@@ -234,9 +234,9 @@ check_rules = function(rules, ...)
 
 #' Rules for understanding languages
 #'
-#' Several Elixir functions -- namely those starting with `expr_` -- take an
-#' argument `rules` which assists those functions in interpreting their
-#' arguments.
+#' Several Elixir functions -- namely [meld()], [reindent()], and [translate()]
+#' -- take an argument `rules` which assists those functions in interpreting
+#' their arguments.
 #'
 #' In all cases, `rules` can either be a character string identifying a set of
 #' built-in rules for a specific language or purpose -- currently, Elixir
@@ -249,5 +249,5 @@ check_rules = function(rules, ...)
 #' a given function, but usually these error messages do not quite cover all
 #' details of what is needed.
 #'
-#' @name rules
+#' @name elixir-rules
 NULL

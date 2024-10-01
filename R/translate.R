@@ -1,12 +1,21 @@
 #' Translate an R expression
 #'
+#' @description
 #' Takes an R expression (in the sense of [rlang::is_expression()]) and
 #' translates it into a character string giving the equivalent expression in
-#' another programming language, according to the supplied [rules].
+#' another programming language, according to the supplied
+#' [rules][elixir-rules].
 #'
+#' This function is experimental and is not exported; it can be invoked using
+#' `elixir:::translate`.
+#'
+#' @usage
+#' elixir:::translate(expr, rules, env = parent.frame())
+#'
+#' @details
 #' The parameter `rules` can be a character string naming a "built-in"
-#' (ruleset)[rules]. Otherwise, `rules` should be a list with the following
-#' elements:
+#' [ruleset][elixir-rules]. Otherwise, `rules` should be a list with the
+#' following elements:
 #' * `ops`: an unnamed list of operator definitions, each of which should be a
 #'   list with four elements:
 #'   - `arity` the number of operands
@@ -41,16 +50,15 @@
 #'
 #' @param expr [Expression][elixir-expression] or list of
 #'     [expressions][elixir-expression] to be translated.
-#' @param rules Which [rules] to follow. You can pass a string from among
-#'     `"C"`, `"C++"`, `"Lua"`, or `"R"`, or a list with translation rules
-#'     (see Details).
+#' @param rules Which [rules][elixir-rules] to follow. You can pass a string
+#'     from among `"C"`, `"C++"`, `"Lua"`, or `"R"`, or a list with translation
+#'     rules (see Details).
 #' @param env Environment for injections in `expr` (see
 #'     [expression][elixir-expression]).
 #' @return The translated expression as a single character string.
 #' @examples
-#' expr_translate({x ^ y}, "C++")
-#' @export
-expr_translate = function(expr, rules, env = parent.frame())
+#' elixir:::translate({x ^ y}, "C++")
+translate = function(expr, rules, env = parent.frame())
 {
     # Get rules
     rules = check_rules(rules,

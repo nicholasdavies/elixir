@@ -4,14 +4,14 @@
 \alias{reindent}
 \title{Reindent some lines of code}
 \usage{
-reindent(lines, rules, tab = "    ", start = 0L)
+elixir:::reindent(lines, rules, tab = "    ", start = 0L)
 }
 \arguments{
 \item{lines}{Character vector with lines of text; can have internal
 newlines.}
 
-\item{rules}{Which \link{rules} to follow. You can pass a string from among
-\code{"C"}, \code{"C++"}, \code{"Lua"}, or \code{"R"}, or a list with elements:
+\item{rules}{Which \link[=elixir-rules]{rules} to follow. You can pass a string
+from among \code{"C"}, \code{"C++"}, \code{"Lua"}, or \code{"R"}, or a list with elements:
 \itemize{
 \item \code{indent_more} Character vector of tokens which increase the indent level.
 \item \code{indent_less} Character vector of tokens which decrease the indent level.
@@ -32,6 +32,9 @@ Using some fairly unsophisticated metrics, \code{\link[=reindent]{reindent()}} w
 of code and, according to its understanding of the rules for that language,
 reindent those lines. This is intended to help prettify automatically
 generated code.
+
+This function is experimental and is not exported; it can be invoked using
+\code{elixir:::reindent}.
 }
 \details{
 Conceptually, the function first ignores any comments or string literals.
@@ -51,6 +54,13 @@ the \verb{else} keyword both decreases and increases the indent level.
 Some unusual character sequences may break \code{\link[=reindent]{reindent()}}.
 }
 \examples{
-reindent(c("if x == 1 then", "print 'one'", "else", "print 'not one'", "end"),
+elixir:::reindent(
+    c(
+        "if x == 1 then",
+        "print 'one'",
+        "else",
+        "print 'not one'",
+        "end"
+    ),
     rules = "Lua")
 }

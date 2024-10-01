@@ -1,9 +1,24 @@
 #' Code generation from template file
 #'
+#' @description
 #' `meld` reads a specially-formatted file from filename `file` or
 #' as lines of text passed via unnamed arguments and returns these lines of
 #' text after performing substitutions of R code.
 #'
+#' This function is experimental and is not exported; it can be invoked using
+#' `elixir:::meld`.
+#'
+#' @usage
+#' meld(
+#'   ...,
+#'   file = NULL,
+#'   rules = NULL,
+#'   reindent = TRUE,
+#'   ipath = ".",
+#'   env = rlang::env_clone(parent.frame())
+#' )
+#'
+#' @details
 #' First, any blocks of text starting with the delimiter `/***R` and
 #' ending with `*/` are run as R code.
 #'
@@ -43,8 +58,8 @@
 #'
 #' @param ... Lines to be interpreted as the text.
 #' @param file File to be read in as the text.
-#' @param rules Which [rules] to follow. You can pass a string from among
-#' `"C"`, `"C++"`, `"Lua"`, or `"R"`, or a list with elements:
+#' @param rules Which [rules][elixir-rules] to follow. You can pass a string
+#' from among `"C"`, `"C++"`, `"Lua"`, or `"R"`, or a list with elements:
 #' * `comment` Character vector for comments (used when backticked lines are
 #' skipped); either NA for no comments, one string for end-of-line comments or
 #' two strings for delimited comments.
@@ -64,7 +79,7 @@
 #' so that new declarations do not pollute the environment in question.
 #' @return The interpreted text as a single character string.
 #' @examples
-#' meld(
+#' elixir:::meld(
 #'     "/***R",
 #'     "names = c('a', 'b', 'c');",
 #'     "dontdothis = NULL;",
@@ -75,7 +90,6 @@
 #'     "    double `dontdothis` = this_doesnt_matter;",
 #'     "    return a + b + c;",
 #'     "}")
-#' @export
 meld = function(..., file = NULL, rules = NULL, reindent = TRUE, ipath = ".", env = rlang::env_clone(parent.frame()))
 {
     # Get rules

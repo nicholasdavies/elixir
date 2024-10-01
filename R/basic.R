@@ -448,15 +448,15 @@ debrace = function(x, ev, env)
 #'
 #' So, for example, rather than
 #'
-#' `expr_translate(quote(x ^ y), "C++")`
+#' `elixir:::translate(quote(x ^ y), "C++")`
 #'
 #' you can write
 #'
-#' `expr_translate({ x ^ y }, "C++")`.
+#' `elixir:::translate({ x ^ y }, "C++")`.
 #'
 #' This only works if the braces are provided "directly"; that is, in
 #'
-#' `expr <- quote({ x ^ y }); expr_translate(expr, "C++")`,
+#' `expr <- quote({ x ^ y }); elixir:::translate(expr, "C++")`,
 #'
 #' the braces are not interpreted in any special way.
 #'

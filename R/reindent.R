@@ -1,10 +1,18 @@
 #' Reindent some lines of code
 #'
+#' @description
 #' Using some fairly unsophisticated metrics, [reindent()] will take some lines
 #' of code and, according to its understanding of the rules for that language,
 #' reindent those lines. This is intended to help prettify automatically
 #' generated code.
 #'
+#' This function is experimental and is not exported; it can be invoked using
+#' `elixir:::reindent`.
+#'
+#' @usage
+#' elixir:::reindent(lines, rules, tab = "    ", start = 0L)
+#'
+#' @details
 #' Conceptually, the function first ignores any comments or string literals.
 #' Then, line by line, `reindent` looks for tokens that signal either an
 #' increase in the indent level, a decrease in the indent level, or both at
@@ -24,8 +32,8 @@
 #'
 #' @param lines Character vector with lines of text; can have internal
 #'     newlines.
-#' @param rules Which [rules] to follow. You can pass a string from among
-#'     `"C"`, `"C++"`, `"Lua"`, or `"R"`, or a list with elements:
+#' @param rules Which [rules][elixir-rules] to follow. You can pass a string
+#'     from among `"C"`, `"C++"`, `"Lua"`, or `"R"`, or a list with elements:
 #' * `indent_more` Character vector of tokens which increase the indent level.
 #' * `indent_less` Character vector of tokens which decrease the indent level.
 #' * `indent_both` Character vector of tokens which decrease, then increase the
@@ -35,7 +43,14 @@
 #' @param start Indent level to start at.
 #' @return Reindented lines as a character vector.
 #' @examples
-#' reindent(c("if x == 1 then", "print 'one'", "else", "print 'not one'", "end"),
+#' elixir:::reindent(
+#'     c(
+#'         "if x == 1 then",
+#'         "print 'one'",
+#'         "else",
+#'         "print 'not one'",
+#'         "end"
+#'     ),
 #'     rules = "Lua")
 #' @export
 reindent = function(lines, rules, tab = "    ", start = 0L)
