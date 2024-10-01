@@ -3,7 +3,8 @@
 #' Match and extract patterns in an [expression] or a list of expressions.
 #'
 #' @usage
-#' expr_match(expr, pattern, n = Inf, longnames = FALSE, env = parent.frame())
+#' expr_match(expr, pattern, n = Inf,
+#'     longnames = FALSE, env = parent.frame())
 #'
 #' expr_count(expr, pattern, n = Inf, env = parent.frame())
 #' expr_detect(expr, pattern, n = Inf, env = parent.frame())
@@ -119,6 +120,39 @@
 #' require the whole symbol to be wrapped in backticks, as in the examples
 #' above, so that they parse as symbols.
 #'
+#' ## Matching function arguments
+#'
+#' If you wish to match a single, unnamed function argument, you can use a
+#' capture token of the form `.A` (single-token argument) or `..B` (expression
+#' argument). To match all arguments, including named ones, use a capture token
+#' of the form `...C`. For example, these all match:
+#'
+#' ```
+#' expr_match({ myfunc() }, { .F() })
+#' expr_match({ myfunc(1) }, { .F(.X) })
+#' expr_match({ myfunc(1 + 1) }, { myfunc(..X) })
+#' expr_match({ myfunc(1, 2) }, { .F(.X, .Y) })
+#' expr_match({ myfunc() }, { myfunc(...A) })
+#' expr_match({ myfunc(1) }, { .F(...A) })
+#' expr_match({ myfunc(2, c = 3) }, { myfunc(...A) })
+#' ```
+#'
+#' but these do not:
+#'
+#' ```
+#' expr_match({ myfunc() }, { .F(.X) })
+#' expr_match({ myfunc() }, { .F(..X) })
+#' expr_match({ myfunc(a = 1) }, { .F(.X) })
+#' expr_match({ myfunc(a = 1 + 1) }, { .F(..X) })
+#' expr_match({ myfunc(1,2) }, { .F(..X) })
+#' expr_match({ myfunc(a = 1, b = 2) }, { .F(...X, ...Y) })
+#' ```
+#'
+#' There may be support for named arguments in patterns in the future, e.g. a
+#' pattern such as `{ f(a = .X) }` that would match an expression like
+#' `{ f(a = 1) }`, but that is currently not supported. So currently you can
+#' only match named function arguments using the `...X` syntax.
+#'
 #' ## Anchoring versus recursing into expressions
 #'
 #' If you want your anchor your pattern, i.e. ensure that the pattern will only
@@ -155,7 +189,8 @@
 #' `which`, those can be extracted instead. For example:
 #'
 #' ```
-#' expr_extract(expr_list({(a+b)+(x+y)}, {"H"*"I"}, {3+4}), {.A + .B}, "A")
+#' expr_extract(expr_list({(a+b)+(x+y)},
+#'     {"H"*"I"}, {3+4}), {.A + .B}, "A")
 #' ```
 #'
 #' gives `list(list(quote(a), quote(x)), NULL, list(3))`.
@@ -210,6 +245,14 @@ expr_match = function(expr, pattern, n = Inf, longnames = FALSE, env = parent.fr
 
 check_pattern = function(pattern)
 {
+    # Check for disallowed naming of elements of the pattern
+    # i.e. this picks up a pattern of f(a = 1)
+    if (!is.null(names(pattern))) {
+        stop("Support for named elements of pattern is not implemented. ",
+            "If you wish to match function arguments, use the .F(...X) syntax. ",
+            "Pattern with named elements is ", deparse(pattern), ".")
+    }
+    # Now check for conflicts in the actual symbols in pattern
     names = all.names(pattern);
     names = c(
         ".match", ".loc", ".alt",
@@ -283,6 +326,24 @@ match_sub = function(expr, pattern, n, into, longnames, loc, parent_match, env)
                 match1 = list(match = expr, loc = loc);
                 match2 = NULL;
                 for (i in seq_along(expr)) {
+                    # subexpr, subpattern needed to keep naming of expr[[i]] and
+                    # pattern[[i]], which happens with named function arguments.
+                    # Could use `[` to retain names, but that keeps the class
+                    # as a call rather than as the type of the parameter.
+                    # See e.g. with x = quote(f(a = 1)), the difference between
+                    # x[2], x[[2]], and structure(x[[2]], names = "a"). Note,
+                    # x[2] does have the name 'a' despite how it's printed, the
+                    # issue is that it remains a call.
+                    # subexpr = expr[[i]]
+                    # subpattern = pattern[[i]]
+                    # Need to check if parent object is named
+                    # if (!is.name(subexpr)) { names(subexpr) = names(expr)[i] }
+                    # if (!is.name(subpattern)) { names(subpattern) = names(pattern)[i] }
+                    if (!identical(rlang::names2(expr)[i], rlang::names2(pattern)[i])) {
+                        match1 = NULL;
+                        match2 = NULL;
+                        break;
+                    }
                     m = match_sub(expr[[i]], pattern[[i]], 1, FALSE, longnames, c(loc, i),
                         c(if (is.null(parent_match)) match1 else parent_match, match2), env);
                     if (is.null(m)) {
@@ -298,11 +359,13 @@ match_sub = function(expr, pattern, n, into, longnames, loc, parent_match, env)
                 match = c(match1, match2);
             }
         } else if (is.name(pattern) && !is.na((m <- stringr::str_match(as.character(pattern), xpat))[1, 1])) {
-            # C. Pattern is ..A -- match any expression
-            match = build_match(expr, loc, list(expr), name("..", m[, 2]));
+            # C. Pattern is ..A -- match any expression, provided it is not named (this requires ...A)
+            if (is.null(names(expr))) {
+                match = build_match(expr, loc, list(expr), name("..", m[, 2]));
+            }
         } else if (is.name(pattern) && !is.na((tm <- stringr::str_match(as.character(pattern), tpat))[1, 1])) {
-            # D. Pattern is .A -- match token
-            if ((is.atomic(expr) || is.name(expr)) && token_match(expr, tm, parent_match, env)) {
+            # D. Pattern is .A -- match token, provided it is not named (this requires ...A)
+            if (is.null(names(expr)) && (is.atomic(expr) || is.name(expr)) && token_match(expr, tm, parent_match, env)) {
                 match = build_match(expr, loc, list(expr), name(".", tm[, 2]));
             }
         } else if (is.call(pattern) && !is.na((tm <- stringr::str_match(as.character(pattern), tpat))[1, 1])) {
