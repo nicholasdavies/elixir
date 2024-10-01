@@ -1,8 +1,8 @@
 #' Make a list of expressions
 #'
 #' Constructs a list of expressions, with support for Elixir's special
-#' [expression] syntax (expression literals with `{}` or `~{}`, and
-#' alternatives with `?`).
+#' [expression][elixir-expression] syntax (expression literals with `{}` or
+#' `~{}`, and alternatives with `?`).
 #'
 #' Be aware that using the `[[` indexing operator on an object of class
 #' `expr_list` discards information about whether that element of the list is
@@ -22,7 +22,8 @@
 #'
 #' @param ... Expressions to include in the list. If the arguments are named,
 #' these will be passed on to the returned list.
-#' @param env Environment for injections in `...` (see [expression]).
+#' @param env Environment for injections in `...` (see
+#' [expression][elixir-expression]).
 #' @param xl An `expr_list`.
 #' @param i Index for subsetting the `expr_list`; an integer, numeric, logical,
 #' or character vector (for named `expr_list`s) interpreted in the usual R way.
@@ -204,7 +205,8 @@ print.expr_list = function(x, ...)
 #'     expressions, in which case the first element of `index` selects the
 #'     expression from the list.
 #' @param idx A valid index: `NULL` or an integer vector.
-#' @param env Environment for any injections in `expr` (see [expression]).
+#' @param env Environment for any injections in `expr` (see
+#' [expression][elixir-expression]).
 #' @param value Replacement; an expression.
 #' @return The subexpression, which can be modified.
 #' @seealso [expr_match()], [expr_locate()] which return indices to
@@ -508,5 +510,5 @@ debrace = function(x, ev, env)
 #' all numbers `2`, `5`, `1` and `4` will match, because the `pattern` can
 #' recurse into the third expression `1 + 4`.
 #'
-#' @name expression
+#' @name elixir-expression
 NULL

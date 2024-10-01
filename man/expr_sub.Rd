@@ -16,7 +16,8 @@ expression from the list.}
 
 \item{idx}{A valid index: \code{NULL} or an integer vector.}
 
-\item{env}{Environment for any injections in \code{expr} (see \link{expression}).}
+\item{env}{Environment for any injections in \code{expr} (see
+\link[=elixir-expression]{expression}).}
 
 \item{value}{Replacement; an expression.}
 }

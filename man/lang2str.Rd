@@ -13,9 +13,10 @@ lang2str(x)
 A character string suitable for printing.
 }
 \description{
-The opposite of \code{\link[=str2lang]{str2lang()}}, \code{\link[=lang2str]{lang2str()}} converts an \link{expression} into
-a character string. Note that \code{\link[=lang2str]{lang2str()}} does not support the normal
-expression syntax for Elixir, so just expects an already-parsed expression.
+The opposite of \code{\link[=str2lang]{str2lang()}}, \code{\link[=lang2str]{lang2str()}} converts an
+\link[=elixir-expression]{expression} into a character string. Note that
+\code{\link[=lang2str]{lang2str()}} does not support the normal expression syntax for Elixir, so
+just expects an already-parsed expression.
 }
 \details{
 This function is essentially identical to \code{\link[=deparse1]{deparse1()}}, which has been

@@ -1,23 +1,25 @@
 #' Replace patterns within expressions
 #'
-#' Match and replace elements of patterns in an [expression] or a list of
-#' expressions.
+#' Match and replace elements of patterns in an [expression][elixir-expression]
+#' or a list of expressions.
 #'
 #' Patterns follow the syntax for [expr_match()].
 #'
 #' @usage
 #' expr_replace(expr, ..., patterns, replacements,
 #'     n = Inf, env = parent.frame())
-#' @param expr Input. An [expression], [expr_list], or [list()] of expressions.
-#' @param ... Alternating series of patterns and replacements, each a single
-#'     [expression] (though alternatives can be specified with `?`).
-#' @param patterns Patterns to look for. An [expression], [expr_list], or
+#' @param expr Input. An [expression][elixir-expression], [expr_list], or
 #'     [list()] of expressions.
+#' @param ... Alternating series of patterns and replacements, each a single
+#'     [expression][elixir-expression] (though alternatives can be specified
+#'     with `?`).
+#' @param patterns Patterns to look for. An [expression][elixir-expression],
+#'     [expr_list], or [list()] of expressions.
 #' @param replacements Replacements, one for each pattern.
 #' @param n Maximum number of times for each expression to make each
 #'     replacement; default is `Inf`.
 #' @param env Environment for injections in `expr`, `pattern` (see
-#'     [expression]).
+#'     [expression][elixir-expression]).
 #' @return The input expression(s) with any replacements made.
 #' @seealso [expr_match()] to find patterns in expressions, and its cousins
 #' [expr_count()], [expr_detect()], [expr_extract()], and [expr_locate()].

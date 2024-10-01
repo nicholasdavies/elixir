@@ -19,11 +19,13 @@ expr_locate(expr, pattern, n = Inf, gather = FALSE,
     env = parent.frame())
 }
 \arguments{
-\item{expr}{Input. An \link{expression}, \link{expr_list}, or \code{\link[=list]{list()}} of expressions.}
+\item{expr}{Input. An \link[=elixir-expression]{expression}, \link{expr_list}, or
+\code{\link[=list]{list()}} of expressions.}
 
-\item{pattern}{Pattern to look for. An \link{expression}, a length-one
-\link{expr_list}, or a length-one \link{list} of expressions. The question mark
-syntax (see \link{expression}) can be used to specify alternatives.}
+\item{pattern}{Pattern to look for. An \link[=elixir-expression]{expression}, a
+length-one \link{expr_list}, or a length-one \link{list} of expressions. The
+question mark syntax (see \link[=elixir-expression]{expression}) can be used
+to specify alternatives.}
 
 \item{n}{Maximum number of matches to make in each expression; default is
 \code{Inf}.}
@@ -33,7 +35,7 @@ just \code{A}, \code{B}, \code{C}, etc., in the returned matches, without the do
 before each name. With \code{dotnames = TRUE}, the dots are kept.}
 
 \item{env}{Environment for injections in \code{expr}, \code{pattern} (see
-\link{expression}).}
+\link[=elixir-expression]{expression}).}
 
 \item{what}{(\code{expr_extract} only) Name of the pattern to extract (or
 \code{"match"}, the default, to extract the entire match).}
@@ -57,12 +59,13 @@ For return values of \code{expr_count}, \code{expr_detect}, \code{expr_extract},
 \code{expr_locate}, see below.
 }
 \description{
-Match and extract patterns in an \link{expression} or a list of expressions.
+Match and extract patterns in an \link[=elixir-expression]{expression} or a list of expressions.
 }
 \section{Details}{
-All of these functions are used to check whether an \link{expression} matches a
-specific pattern, and if it does, retrieve the details of the match. These
-functions are inspired by similar functions in the \code{stringr} package.
+All of these functions are used to check whether an
+\link[=elixir-expression]{expression} matches a specific pattern, and if it does,
+retrieve the details of the match. These functions are inspired by similar
+functions in the \code{stringr} package.
 }
 
 \section{Details for expr_match}{
@@ -175,7 +178,7 @@ only match named function arguments using the \code{...X} syntax.
 If you want your anchor your pattern, i.e. ensure that the pattern will only
 match at the "outer level" of your expression(s), without matching to any
 sub-expressions within, use a tilde (\code{~}) outside the braces (see
-\link{expression} for details). For example,
+\link[=elixir-expression]{expression} for details). For example,
 \code{expr_match({1 + 2 + 3 + 4}, ~{..A + .B})} only gives one match, to the
 addition at the outermost level of \code{1 + 2 + 3} plus \code{4}, but
 \code{expr_match({1 + 2 + 3 + 4}, {..A + .B})} also matches to the inner
@@ -185,10 +188,11 @@ additions of \code{1 + 2} plus \code{3} and \code{1} plus \code{2}.
 \subsection{Alternatives}{
 
 Finally, \code{pattern} can be a series of alternatives, using the operator \verb{?}
-for specifying alternatives (see \link{expression} for details). Results from the
-first matching pattern among these alternatives will be returned, and the
-returned \code{expr_match} object will include a special element named "alt"
-giving the index of the matching alternative (see examples).
+for specifying alternatives (see \link[=elixir-expression]{expression} for
+details). Results from the first matching pattern among these alternatives
+will be returned, and the returned \code{expr_match} object will include a
+special element named "alt" giving the index of the matching alternative
+(see examples).
 }
 }
 

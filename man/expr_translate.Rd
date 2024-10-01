@@ -7,14 +7,15 @@
 expr_translate(expr, rules, env = parent.frame())
 }
 \arguments{
-\item{expr}{\link[=expression]{Expression} or list of \link[=expression]{expressions} to
-be translated.}
+\item{expr}{\link[=elixir-expression]{Expression} or list of
+\link[=elixir-expression]{expressions} to be translated.}
 
 \item{rules}{Which \link{rules} to follow. You can pass a string from among
 \code{"C"}, \code{"C++"}, \code{"Lua"}, or \code{"R"}, or a list with translation rules
 (see Details).}
 
-\item{env}{Environment for injections in \code{expr} (see \link{expression}).}
+\item{env}{Environment for injections in \code{expr} (see
+\link[=elixir-expression]{expression}).}
 }
 \value{
 The translated expression as a single character string.

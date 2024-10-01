@@ -8,13 +8,15 @@ expr_replace(expr, ..., patterns, replacements,
     n = Inf, env = parent.frame())
 }
 \arguments{
-\item{expr}{Input. An \link{expression}, \link{expr_list}, or \code{\link[=list]{list()}} of expressions.}
+\item{expr}{Input. An \link[=elixir-expression]{expression}, \link{expr_list}, or
+\code{\link[=list]{list()}} of expressions.}
 
 \item{...}{Alternating series of patterns and replacements, each a single
-\link{expression} (though alternatives can be specified with \verb{?}).}
+\link[=elixir-expression]{expression} (though alternatives can be specified
+with \verb{?}).}
 
-\item{patterns}{Patterns to look for. An \link{expression}, \link{expr_list}, or
-\code{\link[=list]{list()}} of expressions.}
+\item{patterns}{Patterns to look for. An \link[=elixir-expression]{expression},
+\link{expr_list}, or \code{\link[=list]{list()}} of expressions.}
 
 \item{replacements}{Replacements, one for each pattern.}
 
@@ -22,14 +24,14 @@ expr_replace(expr, ..., patterns, replacements,
 replacement; default is \code{Inf}.}
 
 \item{env}{Environment for injections in \code{expr}, \code{pattern} (see
-\link{expression}).}
+\link[=elixir-expression]{expression}).}
 }
 \value{
 The input expression(s) with any replacements made.
 }
 \description{
-Match and replace elements of patterns in an \link{expression} or a list of
-expressions.
+Match and replace elements of patterns in an \link[=elixir-expression]{expression}
+or a list of expressions.
 }
 \details{
 Patterns follow the syntax for \code{\link[=expr_match]{expr_match()}}.

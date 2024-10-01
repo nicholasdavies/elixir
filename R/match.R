@@ -1,6 +1,6 @@
 #' Find patterns in expressions
 #'
-#' Match and extract patterns in an [expression] or a list of expressions.
+#' Match and extract patterns in an [expression][elixir-expression] or a list of expressions.
 #'
 #' @usage
 #' expr_match(expr, pattern, n = Inf,
@@ -12,10 +12,12 @@
 #'     dotnames = FALSE, gather = FALSE, env = parent.frame())
 #' expr_locate(expr, pattern, n = Inf, gather = FALSE,
 #'     env = parent.frame())
-#' @param expr Input. An [expression], [expr_list], or [list()] of expressions.
-#' @param pattern Pattern to look for. An [expression], a length-one
-#'     [expr_list], or a length-one [list] of expressions. The question mark
-#'     syntax (see [expression]) can be used to specify alternatives.
+#' @param expr Input. An [expression][elixir-expression], [expr_list], or
+#' [list()] of expressions.
+#' @param pattern Pattern to look for. An [expression][elixir-expression], a
+#'     length-one [expr_list], or a length-one [list] of expressions. The
+#'     question mark syntax (see [expression][elixir-expression]) can be used
+#'     to specify alternatives.
 #' @param n Maximum number of matches to make in each expression; default is
 #'     `Inf`.
 #' @param dotnames Normally, patterns like `.A`, `..B`, `...C`, etc, are named
@@ -26,7 +28,7 @@
 #' @param gather (`expr_extract` and `expr_locate` only) Whether to only return
 #'     the successful matches, in a single unnested list.
 #' @param env Environment for injections in `expr`, `pattern` (see
-#'     [expression]).
+#'     [expression][elixir-expression]).
 #' @return `expr_match` returns, for each expression in `expr`, either `NULL`
 #' if there is no match, or an object of class `expr_match` if there is a
 #' match. If `expr` is a single expression, just a single `NULL` or
@@ -44,9 +46,10 @@
 #' @details
 #' # Details
 #'
-#' All of these functions are used to check whether an [expression] matches a
-#' specific pattern, and if it does, retrieve the details of the match. These
-#' functions are inspired by similar functions in the `stringr` package.
+#' All of these functions are used to check whether an
+#' [expression][elixir-expression] matches a specific pattern, and if it does,
+#' retrieve the details of the match. These functions are inspired by similar
+#' functions in the `stringr` package.
 #'
 #' # Details for expr_match
 #'
@@ -158,7 +161,7 @@
 #' If you want your anchor your pattern, i.e. ensure that the pattern will only
 #' match at the "outer level" of your expression(s), without matching to any
 #' sub-expressions within, use a tilde (`~`) outside the braces (see
-#' [expression] for details). For example,
+#' [expression][elixir-expression] for details). For example,
 #' `expr_match({1 + 2 + 3 + 4}, ~{..A + .B})` only gives one match, to the
 #' addition at the outermost level of `1 + 2 + 3` plus `4`, but
 #' `expr_match({1 + 2 + 3 + 4}, {..A + .B})` also matches to the inner
@@ -167,10 +170,11 @@
 #' ## Alternatives
 #'
 #' Finally, `pattern` can be a series of alternatives, using the operator `?`
-#' for specifying alternatives (see [expression] for details). Results from the
-#' first matching pattern among these alternatives will be returned, and the
-#' returned `expr_match` object will include a special element named "alt"
-#' giving the index of the matching alternative (see examples).
+#' for specifying alternatives (see [expression][elixir-expression] for
+#' details). Results from the first matching pattern among these alternatives
+#' will be returned, and the returned `expr_match` object will include a
+#' special element named "alt" giving the index of the matching alternative
+#' (see examples).
 #'
 #' # Details for `expr_count`, `expr_detect`, `expr_extract`, and `expr_locate`
 #'

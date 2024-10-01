@@ -15,8 +15,8 @@ expr_apply(
 )
 }
 \arguments{
-\item{x}{The R object; can an \link{expression}, or a list of arbitrary
-nestedness potentially containing \link{expression}s.}
+\item{x}{The R object; can an \link[=elixir-expression]{expression}, or a list of
+arbitrary nestedness potentially containing \link[=elixir-expression]{expression}s.}
 
 \item{f}{Function to apply to all expressions within \code{x}; takes 1 to 3
 arguments.}
@@ -34,7 +34,8 @@ depth-first search). This only has an effect if \code{into == TRUE}.}
 
 \item{how}{How to structure the result.}
 
-\item{env}{Environment for injections in \code{x} (see \link{expression}).}
+\item{env}{Environment for injections in \code{x} (see
+\link[=elixir-expression]{expression}).}
 }
 \value{
 If \code{how = "replace"} (the default), the original object \code{x} with \code{f}
@@ -43,9 +44,9 @@ applied to expressions within it. If \code{how = "unlist"}, the same but with
 \code{\link[=unique]{unique()}} are applied.
 }
 \description{
-Recursively apply a function over an \link{expression}, or any \link{expression}
-elements of a list, and optionally the subexpressions within any
-expressions.
+Recursively apply a function over an \link[=elixir-expression]{expression}, or any
+\link[=elixir-expression]{expression} elements of a list, and optionally the
+subexpressions within any expressions.
 }
 \details{
 The function \code{f} can take one to three arguments. The first argument is the

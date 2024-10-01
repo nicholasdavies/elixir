@@ -1,8 +1,8 @@
 #' Apply a function over expressions
 #'
-#' Recursively apply a function over an [expression], or any [expression]
-#' elements of a list, and optionally the subexpressions within any
-#' expressions.
+#' Recursively apply a function over an [expression][elixir-expression], or any
+#' [expression][elixir-expression] elements of a list, and optionally the
+#' subexpressions within any expressions.
 #'
 #' The function `f` can take one to three arguments. The first argument is the
 #' expression itself for `f` to apply to, and `f` should return some kind of
@@ -20,8 +20,8 @@
 #' The third argument is an integer vector, the index into `x` where
 #' `f` is currently operating. This is suitable for use with [expr_sub()].
 #'
-#' @param x The R object; can an [expression], or a list of arbitrary
-#' nestedness potentially containing [expression]s.
+#' @param x The R object; can an [expression][elixir-expression], or a list of
+#' arbitrary nestedness potentially containing [expression][elixir-expression]s.
 #' @param f Function to apply to all expressions within `x`; takes 1 to 3
 #' arguments.
 #' @param depth How many levels to recurse into lists; default is `Inf`.
@@ -33,7 +33,8 @@
 #' ("post") its children (the terminology comes from pre-order and post-order
 #' depth-first search). This only has an effect if `into == TRUE`.
 #' @param how How to structure the result.
-#' @param env Environment for injections in `x` (see [expression]).
+#' @param env Environment for injections in `x` (see
+#' [expression][elixir-expression]).
 #' @return If `how = "replace"` (the default), the original object `x` with `f`
 #' applied to expressions within it. If `how = "unlist"`, the same but with
 #' [unlist()] applied to it. If `how = "unique"`, first [unlist()] then

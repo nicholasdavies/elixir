@@ -16,7 +16,8 @@ expr_list(..., env = parent.frame())
 \item{...}{Expressions to include in the list. If the arguments are named,
 these will be passed on to the returned list.}
 
-\item{env}{Environment for injections in \code{...} (see \link{expression}).}
+\item{env}{Environment for injections in \code{...} (see
+\link[=elixir-expression]{expression}).}
 
 \item{xl}{An \code{expr_list}.}
 
@@ -31,8 +32,8 @@ A list of expressions, of class \code{expr_list}.
 }
 \description{
 Constructs a list of expressions, with support for Elixir's special
-\link{expression} syntax (expression literals with \code{{}} or \code{~{}}, and
-alternatives with \verb{?}).
+\link[=elixir-expression]{expression} syntax (expression literals with \code{{}} or
+\code{~{}}, and alternatives with \verb{?}).
 }
 \details{
 Be aware that using the \code{[[} indexing operator on an object of class

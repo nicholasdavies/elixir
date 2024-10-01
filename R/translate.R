@@ -39,12 +39,13 @@
 #' It may be helpful to inspect `elixir:::ruleset` to clarify the above
 #' format.
 #'
-#' @param expr [Expression][expression] or list of [expressions][expression] to
-#'     be translated.
+#' @param expr [Expression][elixir-expression] or list of
+#'     [expressions][elixir-expression] to be translated.
 #' @param rules Which [rules] to follow. You can pass a string from among
 #'     `"C"`, `"C++"`, `"Lua"`, or `"R"`, or a list with translation rules
 #'     (see Details).
-#' @param env Environment for injections in `expr` (see [expression]).
+#' @param env Environment for injections in `expr` (see
+#'     [expression][elixir-expression]).
 #' @return The translated expression as a single character string.
 #' @examples
 #' expr_translate({x ^ y}, "C++")
@@ -151,9 +152,10 @@ translate_sub = function(x, rules)
 
 #' Convert an expression into a string
 #'
-#' The opposite of [str2lang()], [lang2str()] converts an [expression] into
-#' a character string. Note that [lang2str()] does not support the normal
-#' expression syntax for Elixir, so just expects an already-parsed expression.
+#' The opposite of [str2lang()], [lang2str()] converts an
+#' [expression][elixir-expression] into a character string. Note that
+#' [lang2str()] does not support the normal expression syntax for Elixir, so
+#' just expects an already-parsed expression.
 #'
 #' This function is essentially identical to [deparse1()], which has been
 #' available since R 4.0.0, except with `collapse = ""` instead of
