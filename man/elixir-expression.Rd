@@ -2,9 +2,9 @@
 % Please edit documentation in R/basic.R
 \name{elixir-expression}
 \alias{elixir-expression}
-\title{Expressions in Elixir}
+\title{Expressions in \code{elixir}}
 \description{
-Elixir is primarily a package for working with what it calls
+\code{elixir} is primarily a package for working with what it calls
 "expressions", in the sense of any R object for which
 \code{\link[rlang:is_expression]{rlang::is_expression()}} returns \code{TRUE}. This includes calls, like the
 results of evaluating \code{quote(f(x))} or \code{quote(a:b)}, symbols like
@@ -13,7 +13,7 @@ and so on.
 
 This is not to be confused with the built-in type \link[base:expression]{base::expression}, which
 is essentially a special way of storing a vector of multiple "expressions".
-Elixir does not use this type; see \code{\link[=expr_list]{expr_list()}} instead.
+\code{elixir} does not use this type; see \code{\link[=expr_list]{expr_list()}} instead.
 }
 \section{Usage}{
 
@@ -27,10 +27,10 @@ expr_replace(\{ y = a*x^3 + b*x^2 + c*x^1 + d*x^0 \},
 }\if{html}{\out{</div>}}
 }
 
-\section{Specifying expressions in Elixir}{
+\section{Specifying expressions in \code{elixir}}{
 
 
-The Elixir package functions starting with \code{expr_} work with expressions.
+The \code{elixir} package functions starting with \code{expr_} work with expressions.
 These functions all accept a special (optional) syntax for specifying
 expressions which involves the symbols \code{{}}, \verb{?}, and \code{~}, as well as the
 rlang \link[rlang:injection-operator]{injection operator, !!} and
@@ -58,7 +58,7 @@ the braces are not interpreted in any special way.
 Anything between the braces essentially gets put through \code{\link[rlang:expr]{rlang::expr()}}, so
 you can use \verb{!!} (i.e. \link[rlang:injection-operator]{rlang::injection-operator}) and \verb{!!!} (i.e.
 \link[rlang:splice-operator]{rlang::splice-operator}). There is an \code{env} parameter to all relevant
-Elixir functions, defaulting to \code{parent.frame()}, in which these injection
+\code{elixir} functions, defaulting to \code{parent.frame()}, in which these injection
 operations are evaluated.
 }
 
@@ -83,7 +83,7 @@ before the name of the list, like so:
 
 \code{expr_match(expr, ?z)}
 
-and Elixir will treat the list as a set of alternatives. When using
+and \code{elixir} will treat the list as a set of alternatives. When using
 \code{\link[=expr_replace]{expr_replace()}} with a set of alternatives as the pattern, the replacement
 needs to be either a single expression, or a set of alternative expressions
 which has the same number of alternatives as in the pattern.

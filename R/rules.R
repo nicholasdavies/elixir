@@ -234,17 +234,17 @@ check_rules = function(rules, ...)
 
 #' Rules for understanding languages
 #'
-#' Several Elixir functions -- namely [meld()], [reindent()], and [translate()]
-#' -- take an argument `rules` which assists those functions in interpreting
-#' their arguments.
+#' Several `elixir` functions -- namely [meld()], [reindent()], and
+#' [translate()] -- take an argument `rules` which assists those functions in
+#' interpreting their arguments.
 #'
 #' In all cases, `rules` can either be a character string identifying a set of
-#' built-in rules for a specific language or purpose -- currently, Elixir
+#' built-in rules for a specific language or purpose -- currently, `elixir`
 #' accepts `"C"`, `"C++"`, `"Lua"`, or `"R"` -- or a list with elements
 #' required for interpretation.
 #'
 #' `elixir:::ruleset` contains the built-in rules. Passing an empty `list()` as
-#' the `rules` argument to an Elixir function will cause it to complain about
+#' the `rules` argument to an `elixir` function will cause it to complain about
 #' the missing components, which is one way of discerning what is needed for
 #' a given function, but usually these error messages do not quite cover all
 #' details of what is needed.

@@ -15,7 +15,7 @@ A character string suitable for printing.
 \description{
 The opposite of \code{\link[=str2lang]{str2lang()}}, \code{\link[=lang2str]{lang2str()}} converts an
 \link[=elixir-expression]{expression} into a character string. Note that
-\code{\link[=lang2str]{lang2str()}} does not support the normal expression syntax for Elixir, so
+\code{\link[=lang2str]{lang2str()}} does not support the normal expression syntax for \code{elixir}, so
 just expects an already-parsed expression.
 }
 \details{

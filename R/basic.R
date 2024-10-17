@@ -1,6 +1,6 @@
 #' Make a list of expressions
 #'
-#' Constructs a list of expressions, with support for Elixir's special
+#' Constructs a list of expressions, with support for `elixir`'s special
 #' [expression][elixir-expression] syntax (expression literals with `{}` or
 #' `~{}`, and alternatives with `?`).
 #'
@@ -65,6 +65,7 @@ expr_list = function(..., env = parent.frame())
 
 #' @rdname expr_list
 #' @order 2
+#' @keywords internal
 #' @export
 `[.expr_list` = function(xl, i)
 {
@@ -76,6 +77,7 @@ expr_list = function(..., env = parent.frame())
 
 #' @rdname expr_list
 #' @order 3
+#' @keywords internal
 #' @export
 `[<-.expr_list` = function(xl, i, value)
 {
@@ -175,7 +177,7 @@ print.expr_list = function(x, ...)
 #' These functions allow you to extract and/or modify a subexpression within an
 #' expression.
 #'
-#' The Elixir functions [expr_match()] and [expr_locate()] find matching
+#' The `elixir` functions [expr_match()] and [expr_locate()] find matching
 #' "subexpressions" within expressions and return indices that allow accessing
 #' these subexpressions. For example, the expression `1 + 2 + 3` contains all
 #' the following subexpressions:
@@ -235,6 +237,7 @@ expr_sub = function(expr, idx, env = parent.frame())
 }
 
 #' @rdname expr_sub
+#' @keywords internal
 #' @export
 `expr_sub<-` = function(expr, idx, env = parent.frame(), value)
 {
@@ -410,9 +413,9 @@ debrace = function(x, ev, env)
     }
 }
 
-#' Expressions in Elixir
+#' Expressions in `elixir`
 #'
-#' @description Elixir is primarily a package for working with what it calls
+#' @description `elixir` is primarily a package for working with what it calls
 #' "expressions", in the sense of any R object for which
 #' [rlang::is_expression()] returns `TRUE`. This includes calls, like the
 #' results of evaluating `quote(f(x))` or `quote(a:b)`, symbols like
@@ -421,7 +424,7 @@ debrace = function(x, ev, env)
 #'
 #' This is not to be confused with the built-in type [base::expression], which
 #' is essentially a special way of storing a vector of multiple "expressions".
-#' Elixir does not use this type; see [expr_list()] instead.
+#' `elixir` does not use this type; see [expr_list()] instead.
 #'
 #' @section Usage:
 #' ```
@@ -433,9 +436,9 @@ debrace = function(x, ev, env)
 #'     { ..X ^ ..N }, { pow(..X, ..N) })
 #' ```
 #'
-#' @section Specifying expressions in Elixir:
+#' @section Specifying expressions in `elixir`:
 #'
-#' The Elixir package functions starting with `expr_` work with expressions.
+#' The `elixir` package functions starting with `expr_` work with expressions.
 #' These functions all accept a special (optional) syntax for specifying
 #' expressions which involves the symbols `{}`, `?`, and `~`, as well as the
 #' rlang [injection operator, !!][rlang::injection-operator] and
@@ -463,7 +466,7 @@ debrace = function(x, ev, env)
 #' Anything between the braces essentially gets put through [rlang::expr()], so
 #' you can use `!!` (i.e. [rlang::injection-operator]) and `!!!` (i.e.
 #' [rlang::splice-operator]). There is an `env` parameter to all relevant
-#' Elixir functions, defaulting to `parent.frame()`, in which these injection
+#' `elixir` functions, defaulting to `parent.frame()`, in which these injection
 #' operations are evaluated.
 #'
 #' @section Special syntax for patterns and replacements:
@@ -486,7 +489,7 @@ debrace = function(x, ev, env)
 #'
 #' `expr_match(expr, ?z)`
 #'
-#' and Elixir will treat the list as a set of alternatives. When using
+#' and `elixir` will treat the list as a set of alternatives. When using
 #' [expr_replace()] with a set of alternatives as the pattern, the replacement
 #' needs to be either a single expression, or a set of alternative expressions
 #' which has the same number of alternatives as in the pattern.
@@ -511,4 +514,50 @@ debrace = function(x, ev, env)
 #' recurse into the third expression `1 + 4`.
 #'
 #' @name elixir-expression
+NULL
+
+#' `elixir`: Transmutation of languages
+#'
+#' `elixir` is a set of tools for transforming R expressions, including
+#' into other programming languages.
+#'
+#' One of the neat features of R is that you can use the language to
+#' inspect itself. Expressions, functions, indeed entire R scripts can be
+#' examined and manipulated just like any list, data.frame, or other R
+#' object.
+#'
+#' However, the syntax for manipulating R language objects is a little
+#' tricky. Packages such as `rlang` help to make this task easier. `elixir`
+#' makes a few extra shortcuts available, and is geared for advanced R
+#' users.
+#'
+#' @section Find and replace for language objects:
+#'
+#' Sometimes you want to detect certain patterns within an expression or
+#' list of expressions, or easily replace a certain pattern with another.
+#' When working with strings, regular expressions are a handy way of
+#' accomplishing such tasks. `elixir` provides a sort of "regular
+#' expressions for R expressions" functionality through the functions
+#' [expr_match()], [expr_replace()], and the "shortcut" functions
+#' [expr_count()], [expr_detect()], [expr_extract()], and [expr_locate()].
+#'
+#' @section Other `elixir` features:
+#'
+#' The function [expr_apply()] allows you to transform and extract information
+#' from nested list structures which contain expressions, so if you have a big
+#' structure and you want to check all the variable names or make certain
+#' replacements, this may be useful.
+#'
+#' [expr_sub()] offers an interface for extracting or replacing part of an
+#' expression; the one advantage this has over `[[` is that it allows you to use
+#' `NULL` as the index, which gives back the whole expression.
+#'
+#' [lang2str()] does the opposite of [base::str2lang()]; it is like
+#' `deparse1()` which is new since R 4.0.0, but with `collapse = ""` instead of
+#' `collapse = " "`.
+#'
+#' Finally, [meld()], [translate()], and [reindent()] are various experimental
+#' functions for constructing code using R.
+#'
+#' @name elixir
 NULL

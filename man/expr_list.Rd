@@ -31,7 +31,7 @@ expressions.}
 A list of expressions, of class \code{expr_list}.
 }
 \description{
-Constructs a list of expressions, with support for Elixir's special
+Constructs a list of expressions, with support for \code{elixir}'s special
 \link[=elixir-expression]{expression} syntax (expression literals with \code{{}} or
 \code{~{}}, and alternatives with \verb{?}).
 }
@@ -63,3 +63,4 @@ expr_list(
 var = as.name("myvar")
 expr_list({ 1 }, { !!var }, { (!!var)^2 })
 }
+\keyword{internal}

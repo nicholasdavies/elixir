@@ -29,7 +29,7 @@ These functions allow you to extract and/or modify a subexpression within an
 expression.
 }
 \details{
-The Elixir functions \code{\link[=expr_match]{expr_match()}} and \code{\link[=expr_locate]{expr_locate()}} find matching
+The \code{elixir} functions \code{\link[=expr_match]{expr_match()}} and \code{\link[=expr_locate]{expr_locate()}} find matching
 "subexpressions" within expressions and return indices that allow accessing
 these subexpressions. For example, the expression \code{1 + 2 + 3} contains all
 the following subexpressions:\tabular{lcl}{
@@ -68,3 +68,4 @@ print(expr)
 \code{\link[=expr_match]{expr_match()}}, \code{\link[=expr_locate]{expr_locate()}} which return indices to
 subexpressions.
 }
+\keyword{internal}

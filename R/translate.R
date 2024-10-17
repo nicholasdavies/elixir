@@ -159,7 +159,7 @@ translate_sub = function(x, rules)
 #'
 #' The opposite of [str2lang()], [lang2str()] converts an
 #' [expression][elixir-expression] into a character string. Note that
-#' [lang2str()] does not support the normal expression syntax for Elixir, so
+#' [lang2str()] does not support the normal expression syntax for `elixir`, so
 #' just expects an already-parsed expression.
 #'
 #' This function is essentially identical to [deparse1()], which has been

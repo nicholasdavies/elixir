@@ -1,13 +1,13 @@
 ---
-title: "Introduction to `elixir`"
+title: "Introduction to elixir"
 output: rmarkdown::html_vignette
 vignette: >
-  %\VignetteIndexEntry{Introduction to `elixir`}
+  %\VignetteIndexEntry{Introduction to elixir}
   %\VignetteEncoding{UTF-8}
   %\VignetteEngine{knitr::rmarkdown}
 editor_options: 
   markdown: 
-    wrap: 72
+    wrap: 80
 ---
 
 ```{r, include = FALSE}
@@ -21,51 +21,48 @@ knitr::opts_chunk$set(
 library(elixir)
 ```
 
-`elixir` is a set of tools for transforming R expressions, including
-into other programming languages.
+`elixir` is a set of tools for transforming R expressions, including into other
+programming languages.
 
-One of the neat features of R is that you can use the language to
-inspect itself. Expressions, functions, indeed entire R scripts can be
-examined and manipulated just like any list, data.frame, or other R
-object.
+One of the neat features of R is that you can use the language to inspect
+itself. Expressions, functions, indeed entire R scripts can be examined and
+manipulated just like any list, data.frame, or other R object.
 
-However, the syntax for manipulating R language objects is a little
-tricky. Packages such as `rlang` help to make this task easier. `elixir`
-makes a few extra shortcuts available, and is geared for advanced R
-users.
+However, the syntax for manipulating R language objects is a little tricky.
+Packages such as `rlang` help to make this task easier. `elixir` makes a few
+extra shortcuts available, and is geared for advanced R users.
 
 # Find and replace for language objects
 
-Sometimes you want to detect certain patterns within an expression or
-list of expressions, or easily replace a certain pattern with another.
-When working with strings, regular expressions are a handy way of
-accomplishing such tasks. `elixir` provides a sort of "regular
-expressions for R expressions" functionality through the functions
-`expr_match()`, `expr_replace()`, and the "shortcut" functions
-`expr_count()`, `expr_detect()`, `expr_extract()`, and `expr_locate()`.
+Sometimes you want to detect certain patterns within an expression or list of
+expressions, or easily replace a certain pattern with another. When working with
+strings, regular expressions are a handy way of accomplishing such tasks.
+`elixir` provides a sort of "regular expressions for R expressions"
+functionality through the functions `expr_match()`, `expr_replace()`, and the
+"shortcut" functions `expr_count()`, `expr_detect()`, `expr_extract()`, and
+`expr_locate()`.
 
-Frequent users of the excellent
-[`stringr`](https://stringr.tidyverse.org/) package will recognize the
-intentional similarity between the above functions and
-`str_match()`, `str_replace()`,
-`str_count()`, `str_detect()`, `str_extract()`, and
-`str_locate()` from `stringr`.
+Frequent users of the excellent [`stringr`](https://stringr.tidyverse.org/)
+package will recognize the intentional similarity between the above functions
+and `str_match()`, `str_replace()`, `str_count()`, `str_detect()`,
+`str_extract()`, and `str_locate()` from `stringr`.
 
 The easiest way to demonstrate these is through an example.
 
 ## Example: a domain-specific language for ordinary differential equations
 
-The Lotka-Volterra equations can be used to model a predator-prey
-interaction using a system of ordinary differential equations:
+The Lotka-Volterra equations can be used to model a predator-prey interaction as
+a system of ordinary differential equations:
 
 $$
 dx/dt = \alpha x - \beta x y \\
 dy/dt = -\gamma y + \delta x y
-$$ Here, $x$ is the predator density, $y$ is the prey density, $\alpha$
-is the prey birth rate, $\beta$ is the rate at which the prey is killed
-by the predator, $\gamma$ is the predator net death rate in the absence
-of prey to eat, and $\delta$ is the effect of eating prey on the
-predator birth rate.
+$$
+
+Here, $x$ is the predator density, $y$ is the prey density, $\alpha$ is the prey
+birth rate, $\beta$ is the rate at which the prey is killed by the predator,
+$\gamma$ is the predator net death rate in the absence of prey to eat, and
+$\delta$ is the effect of eating prey on the predator birth rate.
 
 One could implement this in R using the package `deSolve`:
 
@@ -88,11 +85,14 @@ func <- function(t, y, parms)
 # matplot(sol[, 1], sol[, -1], type = "l")
 ```
 
-The usage of the above with the `deSolve` package is commented out so that
-`deSolve` isn't required to build this vignette.
+![](ode_plot.png)
 
-Let's suppose that instead we want to start with a set of quoted
-statements like this:
+If you run those last two lines that are commented out, you should see the
+solution plotted as above. (The lines are commented out so that `deSolve` isn't
+required to build this vignette.)
+
+Let's suppose that instead we want to start with a set of quoted statements like
+this:
 
 ```{r}
 system <- quote({
@@ -111,36 +111,53 @@ system <- quote({
 })
 ```
 
-and turn this into the components above. Here is one approach with
-`elixir`. The aim isn't to make something totally robust, but just to
-get something up and running, and demonstrate the use of the package.
+and turn this into the components above. Here is one approach with `elixir`. The
+aim isn't to make something totally robust, but just to get something up and
+running, and demonstrate the use of the package.
 
-First, we want to set the variable `times` to a set of integers running
-from 0 to the specified `t_end` within `system`. We can look for a
-statement of the form `t_end = .X` like so:
+First, we want to set the variable `times` to a set of integers running from 0
+to the specified `t_end` within `system`. We can look for a statement of the
+form `t_end = .X` like so:
 
 ```{r}
 expr_match(system, { t_end = .X })
 ```
 
-We can extract the number `100` from this list returned by `expr_match`,
-but instead we will use a shortcut, `expr_extract`:
+`elixir` allows you to quote expressions inline using `{ curly braces }` as
+above. It's sort of the equivalent of `"quotation marks"` for a string. This is
+handy to avoid having the equals sign `=` interpreted as naming a parameter to
+`quote` or `rlang::expr`:
+
+```{r, eval = FALSE}
+# neither of these will work
+expr_match(system, quote(t_end = .X))
+expr_match(system, rlang::expr(t_end = .X))
+
+# instead you would have to do something like this:
+expr_match(system, quote((t_end = .X))[[2]])
+expr_match(system, rlang::expr((t_end = .X))[[2]])
+
+# This works because the expression (t_end = .X) is a call, which is list-like
+# with two elements: 
+# [[1]] is the symbol `(`, and [[2]] is the call t_end = .X.
+```
+
+We can extract the number `100` from this list returned by `expr_match`, but
+instead we will use a shortcut, `expr_extract`:
 
 ```{r}
 expr_extract(system, { t_end = .X }, "X")
 ```
 
-This always returns a `list` with as many entries as there are matches,
-so if there were two statements of the form `t_end = .X` then this would
-be a two-element `list`. We can tell `elixir` to stop after the first
-match:
+This always returns a `list` with as many entries as there are matches, so if
+there were two statements of the form `t_end = .X` then this would be a
+two-element `list`. We can tell `elixir` to stop after the first match:
 
 ```{r}
 expr_extract(system, { t_end = .X }, "X", n = 1)
 ```
 
-or use `expr_count` to make sure there is exactly one `t_end = .X`
-statement:
+or use `expr_count` to make sure there is exactly one `t_end = .X` statement:
 
 ```{r}
 if (expr_count(system, { t_end = .X }) != 1) {
@@ -155,16 +172,15 @@ times <- 0:expr_extract(system, { t_end = .X }, "X")[[1]]
 times
 ```
 
-OK, that's done. Now let's extract the initial state vector. For this we
-want to look for patterns of the form `.X(0) = .V`:
+OK, that's done. Now let's extract the initial state vector. For this we want to
+look for patterns of the form `.X(0) = .V`:
 
 ```{r}
 expr_match(system, { .X(0) = .V })
 ```
 
-Again, we'll use `expr_extract` to pull out the two needed components,
-the names of the states (here "x" and "y") and their initial values
-(both 1).
+Again, we'll use `expr_extract` to pull out the two needed components, the names
+of the states (here "x" and "y") and their initial values (both 1).
 
 ```{r}
 expr_extract(system, { .X(0) = .V }, "X")
@@ -181,29 +197,27 @@ Now for parameters, we might initially think to use:
 expr_match(system, { .P = .X })
 ```
 
-But that picks up `t_end` and misses out on `alpha` and `beta`. The
-reason the latter two components are missed out is that in `.P = .X`,
-`.X` only matches a single token, and `1/6` is an expression with three
-tokens, `/`, `1`, and `6`. So we'll use `..X` instead of `.X` so that we
-can match any subexpression:
+But that picks up `t_end` and misses out on `alpha` and `beta`. The reason the
+latter two components are missed out is that in `.P = .X`, `.X` only matches a
+single token, and `1/6` is an expression with three tokens, `/`, `1`, and `6`.
+So we'll use `..X` instead of `.X` so that we can match any subexpression:
 
 ```{r}
 expr_match(system, { .P = ..X })
 ```
 
-We can also filter out t_end by adding a "test" to the capture token
-`.P` like so:
+We can also filter out t_end by adding a "test" to the capture token `.P` like
+so:
 
 ```{r}
 expr_match(system, { `.P|P != "t_end"` = ..X })
 ```
 
-Anything after the `|` is interpreted as a condition to evaluate, and
-the match only succeeds if the condition evaluates to `TRUE`. Within the
-condition, `.` is a placeholder for the matched token, but we can also
-use the name of the token itself, i.e. `P`. Note that we have to wrap
-the whole capture token in backticks so that it gets read as a single
-symbol.
+Anything after the `|` is interpreted as a condition to evaluate, and the match
+only succeeds if the condition evaluates to `TRUE`. Within the condition, `.` is
+a placeholder for the matched token, but we can also use the name of the token
+itself, i.e. `P`. Note that we have to wrap the whole capture token in backticks
+so that it gets read as a single symbol.
 
 All together, we can get the parameters like so:
 
@@ -213,20 +227,19 @@ parms <- sapply(parms, eval)
 names(parms) <- as.character(expr_extract(system, { `.P|P != "t_end"` = ..X }, "P"))
 ```
 
-We need to use `eval` on what has been captured by `..X` in order to
-evaluate the quoted expressions.
+We need to use `eval` on what has been captured by `..X` in order to evaluate
+the quoted expressions.
 
-Capturing the ordinary differential equations themselves, and inserting
-this into a function that `deSolve` can use, requires us to look for
-patterns `dX/dt = ...`; since the "dX" there is one symbol, we will
-check it to make sure it is a symbol that starts with a lowercase d:
+Capturing the ordinary differential equations themselves, and inserting this
+into a function that `deSolve` can use, requires us to look for patterns
+`dX/dt = ...`; since the "dX" there is one symbol, we will check it to make sure
+it is a symbol that starts with a lowercase d:
 
 ```{r}
 expr_match(system, { `.A:name|substr(A, 1, 1) == "d"`/dt = ..X })
 ```
 
-Here, the `:name` checks that the the captured element `.A` is of class
-`name`.
+Here, the `:name` checks that the the captured element `.A` is of class `name`.
 
 Let's extract the statements:
 
@@ -235,8 +248,8 @@ statements <- expr_extract(system, { `.A:name|substr(A, 1, 1) == "d"`/dt = ..X }
 statements
 ```
 
-We can now use `expr_replace` to change e.g. `dX/dt = ...` to
-`dX <- ...` so that it is a valid R assignment statement:
+We can now use `expr_replace` to change e.g. `dX/dt = ...` to `dX <- ...` so
+that it is a valid R assignment statement:
 
 ```{r}
 R_statements <- expr_replace(statements,
@@ -245,8 +258,7 @@ R_statements <- expr_replace(statements,
 R_statements
 ```
 
-Let's also extract the names of the derivatives themselves, i.e. `dx`
-and `dy`:
+Let's also extract the names of the derivatives themselves, i.e. `dx` and `dy`:
 
 ```{r}
 derivatives <- expr_replace(R_statements, { .D <- ..X }, { .D })
@@ -268,8 +280,7 @@ func <- eval(rlang::expr(
 ))
 ```
 
-Putting it all together into a wrapper function, we get something like
-this:
+Putting it all together into a wrapper function, we get something like this:
 
 ```{r}
 run_ode <- function(system)
@@ -327,22 +338,23 @@ system <- quote({
 })
 
 run_ode(system)
-
 ```
+
+![](ode_plot.png)
 
 # Other `elixir` features
 
-The function `expr_apply()` allows you to transform and extract information 
-from nested list structures which contain expressions, so if you have a big 
-structure and you want to check all the variable names or make certain 
-replacements, this may be useful.
+The function `expr_apply()` allows you to transform and extract information from
+nested list structures which contain expressions, so if you have a big structure
+and you want to check all the variable names or make certain replacements, this
+may be useful.
 
 `expr_sub()` offers an interface for extracting or replacing part of an
 expression; the one advantage this has over `[[` is that it allows you to use
 `NULL` as the index, which gives back the whole expression.
 
-`lang2str()` does the opposite of `str2lang()`; it is like `deparse1()` which
-is new since R 4.0.0, but with `collapse = ""` instead of `collapse = " "`.
+`lang2str()` does the opposite of `str2lang()`; it is like `deparse1()` which is
+new since R 4.0.0, but with `collapse = ""` instead of `collapse = " "`.
 
 Finally, `meld()`, `translate()`, and `reindent()` are various experimental
 functions for constructing code using R.
