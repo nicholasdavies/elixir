@@ -33,6 +33,11 @@ test_that("expr_match works at top level", {
     expect_identical(expr_match( { a + b }, ~{ ..A } ), M1(a + b, A = quote(a + b)))
     expect_identical(expr_match( { a + b + c }, ~{ ..B } ), M1(a + b + c, B = quote(a + b + c)))
 
+    expect_identical(expr_match( { a() }, ~{ ..B } ), M1(a(), B = quote(a())))
+    expect_identical(expr_match( { a(7) }, ~{ ..B } ), M1(a(7), B = quote(a(7))))
+    expect_identical(expr_match( { a(x = 7) }, ~{ ..B } ), M1(a(x = 7), B = quote(a(x = 7))))
+    expect_identical(expr_match( { a(x = 7, y = 8) }, ~{ ..B } ), M1(a(x = 7, y = 8), B = quote(a(x = 7, y = 8))))
+
     expect_identical(expr_match( { a }, ~{ .A } ), M1(a, A = quote(a)))
     expect_identical(expr_match( { a() }, ~{ .A } ), NULL)
     expect_identical(expr_match( { a }, ~{ .A() } ), NULL)

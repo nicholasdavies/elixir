@@ -330,19 +330,6 @@ match_sub = function(expr, pattern, n, into, dotnames, loc, parent_match, env)
                 match1 = list(match = expr, loc = loc);
                 match2 = NULL;
                 for (i in seq_along(expr)) {
-                    # subexpr, subpattern needed to keep naming of expr[[i]] and
-                    # pattern[[i]], which happens with named function arguments.
-                    # Could use `[` to retain names, but that keeps the class
-                    # as a call rather than as the type of the parameter.
-                    # See e.g. with x = quote(f(a = 1)), the difference between
-                    # x[2], x[[2]], and structure(x[[2]], names = "a"). Note,
-                    # x[2] does have the name 'a' despite how it's printed, the
-                    # issue is that it remains a call.
-                    # subexpr = expr[[i]]
-                    # subpattern = pattern[[i]]
-                    # Need to check if parent object is named
-                    # if (!is.name(subexpr)) { names(subexpr) = names(expr)[i] }
-                    # if (!is.name(subpattern)) { names(subpattern) = names(pattern)[i] }
                     if (!identical(rlang::names2(expr)[i], rlang::names2(pattern)[i])) {
                         match1 = NULL;
                         match2 = NULL;
@@ -363,10 +350,8 @@ match_sub = function(expr, pattern, n, into, dotnames, loc, parent_match, env)
                 match = c(match1, match2);
             }
         } else if (is.name(pattern) && !is.na((m <- stringr::str_match(as.character(pattern), xpat))[1, 1])) {
-            # C. Pattern is ..A -- match any expression, provided it is not named (this requires ...A)
-            if (is.null(names(expr))) {
-                match = build_match(expr, loc, list(expr), name("..", m[, 2]));
-            }
+            # C. Pattern is ..A -- match any expression
+            match = build_match(expr, loc, list(expr), name("..", m[, 2]));
         } else if (is.name(pattern) && !is.na((tm <- stringr::str_match(as.character(pattern), tpat))[1, 1])) {
             # D. Pattern is .A -- match token, provided it is not named (this requires ...A)
             if (is.null(names(expr)) && (is.atomic(expr) || is.name(expr)) && token_match(expr, tm, parent_match, env)) {
