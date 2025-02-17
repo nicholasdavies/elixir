@@ -25,9 +25,11 @@
 #' - `` `$expr` ``subs in `expr` only on the last line of a multi-line expansion
 #' - `` `!$expr` `` subs in `expr` on all but the last line of a multi-line expansion
 #' - `` `#include <file>` `` runs `file` through `meld` and pastes in the result
+#' - `` `#include "file"` `` interprets `file` as an R expression resolving to
+#'   a filename, runs that file through `meld`, and pastes in the result
 #'
 #' The `#include` command must appear by itself on a line, and searches for
-#' `file` in the path `ipath`.
+#' files in the path `ipath`.
 #'
 #' The function tries to guess `rules` from the file extension if that is
 #' possible. If the file extension is .c, then `"C"` is guessed; for .h, .hpp,
@@ -183,13 +185,26 @@ meld = function(..., file = NULL, rules = NULL, reindent = TRUE, ipath = ".", en
             R_block_open = R_block_open[-blocks];
         }
 
-        # Execute #include command if present
+        # Execute #include <file> command if present
         match_include = regmatches(lines[l],
             regexec("^\\s*`\\s*#\\s*include\\s+<([^>]+)>\\s*`\\s*$", lines[l]));
         if (length(match_include[[1]]) == 2) {
             inc_file = file.path(ipath, match_include[[1]][2]);
             if (!file.exists(inc_file)) {
                 stop("Cannot find #included file ", inc_file, ".");
+            }
+            lines[l] = meld(file = inc_file, rules = rules, reindent = reindent, ipath = ipath, env = env);
+            next;
+        }
+
+        # Execute #include "file" command if present
+        match_include2 = regmatches(lines[l],
+            regexec("^\\s*`\\s*#\\s*include\\s+\"([^\"]+)\"\\s*`\\s*$", lines[l]));
+        if (length(match_include2[[1]]) == 2) {
+            filename = eval(str2lang(match_include2[[1]][2]), envir = env);
+            inc_file = file.path(ipath, filename);
+            if (!file.exists(inc_file)) {
+                stop("Cannot find #included filename ", inc_file, ".");
             }
             lines[l] = meld(file = inc_file, rules = rules, reindent = reindent, ipath = ipath, env = env);
             next;
