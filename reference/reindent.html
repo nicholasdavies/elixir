@@ -98,7 +98,17 @@ the same time. For example, in this Lua code:</p>
 <span id="cb1-4"><a href="#cb1-4" tabindex="-1"></a>    print <span class="st">'not one'</span></span>
 <span id="cb1-5"><a href="#cb1-5" tabindex="-1"></a>end</span></code></pre><p></p></div>
 <p>the <code>else</code> keyword both decreases and increases the indent level.</p>
-<p>Some unusual character sequences may break <code>reindent()</code>.</p>
+<p><code>reindent()</code> supports "raw strings" in R, C, C++, and Lua code but only in
+limited cases. In R, when using <a href="https://rdrr.io/r/base/Quotes.html" class="external-link">raw character constants</a> you must
+use an uppercase <code>R</code>, the double quote symbol and zero to two hyphens. In
+C/C++, when using
+<a href="https://en.cppreference.com/w/cpp/language/string_literal.html" class="external-link">raw string literals</a>
+you must use the prefix <code>R</code>, and zero to two hyphens as the delimiter char
+sequence (plus parentheses). In Lua, you can use
+<a href="https://www.lua.org/manual/5.2/manual.html#3.1" class="external-link">long brackets</a> with zero
+to two equals signs. Any other attempt to use raw strings will probably
+break <code>reindent()</code>.</p>
+<p>Other unusual character sequences may also break <code>reindent()</code>.</p>
     </div>
 
     <div class="section level2">
