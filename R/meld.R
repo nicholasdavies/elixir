@@ -24,8 +24,7 @@
 #' - `` `!^expr` `` subs in `expr` on all but the first line of a multi-line expansion
 #' - `` `$expr` ``subs in `expr` only on the last line of a multi-line expansion
 #' - `` `!$expr` `` subs in `expr` on all but the last line of a multi-line expansion
-#' - `` `#include <file>` `` runs `file` through `meld` and pastes in the result
-#' - `` `#include "file"` `` interprets `file` as an R expression resolving to
+#' - `` `#include file` `` interprets `file` as an R expression resolving to
 #'   a filename, runs that file through `meld`, and pastes in the result
 #'
 #' The `#include` command must appear by itself on a line, and searches for
@@ -47,7 +46,8 @@
 #' a separator. This allows backticked expressions to apply over multiple
 #' lines.
 #'
-#' @param ... Lines to be interpreted as the text.
+#' @param ... Lines to be interpreted as the text. If there are any embedded
+#'     newlines in a line, the line is split into multiple lines.
 #' @param file File to be read in as the text.
 #' @param rules Which [rules][elixir-rules] to follow. You can pass a string
 #' from among `"C"`, `"C++"`, `"Lua"`, or `"R"`, or a list with elements:
@@ -122,8 +122,8 @@ meld = function(..., file = NULL, rules = NULL, reindent = TRUE, ipath = ".", en
         lines = readLines(file, warn = FALSE)
         filename = file;
     } else {
-        # TODO split by newline? This would allow meld(r"-[ ... ]-")
         lines = as.character(c(...));
+        lines = unlist(lapply(lines, stringr::str_split_1, "\n"));
         filename = "... argument";
     }
 
@@ -187,28 +187,9 @@ meld = function(..., file = NULL, rules = NULL, reindent = TRUE, ipath = ".", en
             R_block_open = R_block_open[-blocks];
         }
 
-        # TODO just have one version of include which takes a character string
-        # this is passed through R regardless so e.g. #include "file.c" looks
-        # for the file file.c, while #include myfile looks for the file
-        # whose name is in the R expression myfile (e.g. if myfile = "foo.h")
-        # TODO `#something xxx` could run a function something(xxx)? OTOH
-        # we can just do `something(xxx)` so that's not really needed
-
-        # Execute #include <file> command if present
-        match_include = regmatches(lines[l],
-            regexec("^\\s*`\\s*#\\s*include\\s+<([^>]+)>\\s*`\\s*$", lines[l]));
-        if (length(match_include[[1]]) == 2) {
-            inc_file = file.path(ipath, match_include[[1]][2]);
-            if (!file.exists(inc_file)) {
-                stop("Cannot find #included file ", inc_file, ".");
-            }
-            lines[l] = meld(file = inc_file, rules = rules, reindent = reindent, ipath = ipath, env = env);
-            next;
-        }
-
-        # Execute #include "file" command if present
+        # Execute #include command if present
         match_include2 = regmatches(lines[l],
-            regexec("^\\s*`\\s*#\\s*include\\s+\"([^\"]+)\"\\s*`\\s*$", lines[l]));
+            regexec("^\\s*`\\s*#\\s*include\\s+([^`]+)`\\s*$", lines[l]));
         if (length(match_include2[[1]]) == 2) {
             filename = eval(str2lang(match_include2[[1]][2]), envir = env);
             inc_file = file.path(ipath, filename);
@@ -278,8 +259,8 @@ meld = function(..., file = NULL, rules = NULL, reindent = TRUE, ipath = ".", en
         # with newlines within, indent non-first lines within character according to spaces preceding backtick.
         # This is so lines like this
         #     `lines_of_code`
-        # include the spacing before `lines_of_code` for each line
-        # TODO why is this needed? i guess for the \n inclusion within the character
+        # include the spacing before `lines_of_code` for each line, even if
+        # `lines_of_code` is just a length-1 string (with embedded newlines).
         if (length(sE) == 1 && sL[1] %like% "^[ \t]+$" && is.character(sE[[1]]) && any(sE[[1]] %like% "\n"))
         {
             sE[[1]] = stringr::str_replace_all(sE[[1]], "\n", paste0("\n", sL[1]));
