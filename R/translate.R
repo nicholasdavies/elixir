@@ -45,6 +45,30 @@
 #' It may be helpful to inspect `elixir:::ruleset` to clarify the above
 #' format.
 #'
+#' There are some important shortcomings to [translate()]. Here are some
+#' potential pitfalls:
+#' * Named arguments are not supported, because we cannot translate an R
+#'   function call like `mean(x, na.rm = TRUE)` without knowing which
+#'   parameter of `mean` matches to `na.rm`.
+#' * Division: An R expression like `1/3` gets translated into `1./3.` in
+#'   C/C++, as numeric literals are coerced to type `double`. So both of these
+#'   evaluate to 0.333. However, the R expression `1L/3L` will get translated
+#'   into `1/3` in C/C++, which evaluates to 0 (as it is integer division).
+#' * Modulo: R uses "Knuth's modulo", where `a %% b` has the same sign as `b`.
+#'   Lua also uses Knuth's modulo, but C/C++ use "truncated modulo", where
+#'   `a % b` has the same sign as `a`. (see
+#'   [Wikipedia](https://en.wikipedia.org/wiki/Modulo#Variants_of_the_definition)
+#'   for details). So when converting a modulo expression from R to C/C++, a
+#'   call to the function `kmod` is generated in the C/C++ expression. This is
+#'   not a standard library function, so you will have to provide a definition
+#'   yourself. A workable definition is:
+#'   `double kmod(double x, double y) { double r = fmod(x, y); return r && r < 0 != y < 0 ? r + y : r; }`
+#'   (R) or `a % b` (Lua)
+#' * Types: In R, the type of `a %% b` and of `a %/% b` depends on the type of
+#'   `a` and `b` (if both are integers, the result is an integer; if at least
+#'   one is numeric, the result is numeric).
+#' * Chained assignment does not work in Lua.
+#'
 #' @param expr [Expression][elixir-expression] or list of
 #'     [expressions][elixir-expression] to be translated.
 #' @param rules Which [rules][elixir-rules] to follow. You can pass a string
