@@ -64,7 +64,8 @@ text after performing substitutions of R code.</p>
 
 
 <dl><dt id="arg--">...<a class="anchor" aria-label="anchor" href="#arg--"></a></dt>
-<dd><p>Lines to be interpreted as the text.</p></dd>
+<dd><p>Lines to be interpreted as the text. If there are any embedded
+newlines in a line, the line is split into multiple lines.</p></dd>
 
 
 <dt id="arg-file">file<a class="anchor" aria-label="anchor" href="#arg-file"></a></dt>
@@ -120,8 +121,7 @@ with elements of the expression in sequence.</p>
 <li><p><code>`!^expr`</code> subs in <code>expr</code> on all but the first line of a multi-line expansion</p></li>
 <li><p><code>`$expr`</code>subs in <code>expr</code> only on the last line of a multi-line expansion</p></li>
 <li><p><code>`!$expr`</code> subs in <code>expr</code> on all but the last line of a multi-line expansion</p></li>
-<li><p><code>`#include &lt;file&gt;`</code> runs <code>file</code> through <code>meld</code> and pastes in the result</p></li>
-<li><p><code>`#include "file"`</code> interprets <code>file</code> as an R expression resolving to
+<li><p><code>`#include file`</code> interprets <code>file</code> as an R expression resolving to
 a filename, runs that file through <code>meld</code>, and pastes in the result</p></li>
 </ul><p>The <code>#include</code> command must appear by itself on a line, and searches for
 files in the path <code>ipath</code>.</p>
@@ -151,9 +151,9 @@ lines.</p>
 <span class="r-in"><span>    <span class="st">"{"</span>,</span></span>
 <span class="r-in"><span>    <span class="st">"    double `names` = `1:3`;"</span>,</span></span>
 <span class="r-in"><span>    <span class="st">"    double `dontdothis` = this_doesnt_matter;"</span>,</span></span>
-<span class="r-in"><span>    <span class="st">"    return `paste(names, sep = "</span> <span class="op">+</span> <span class="st">")`;"</span>,</span></span>
+<span class="r-in"><span>    <span class="st">"    return `paste(names, sep = ' + ')`;"</span>,</span></span>
 <span class="r-in"><span>    <span class="st">"}"</span><span class="op">)</span></span></span>
-<span class="r-err co"><span class="r-pr">#&gt;</span> <span class="error">Error in "    return `paste(names, sep = " + ")`;":</span> non-numeric argument to binary operator</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "double foo()\n{\n    double a = 1;\n    double b = 2;\n    double c = 3;\n    return a;\n    return b;\n    return c;\n}"</span>
 </code></pre></div>
     </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
