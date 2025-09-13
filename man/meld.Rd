@@ -14,7 +14,8 @@ meld(
 )
 }
 \arguments{
-\item{...}{Lines to be interpreted as the text.}
+\item{...}{Lines to be interpreted as the text. If there are any embedded
+newlines in a line, the line is split into multiple lines.}
 
 \item{file}{File to be read in as the text.}
 
@@ -72,8 +73,7 @@ There are some special sequences:
 \item \code{`!^expr`} subs in \code{expr} on all but the first line of a multi-line expansion
 \item \code{`$expr`}subs in \code{expr} only on the last line of a multi-line expansion
 \item \code{`!$expr`} subs in \code{expr} on all but the last line of a multi-line expansion
-\item \code{`#include <file>`} runs \code{file} through \code{meld} and pastes in the result
-\item \code{`#include "file"`} interprets \code{file} as an R expression resolving to
+\item \code{`#include file`} interprets \code{file} as an R expression resolving to
 a filename, runs that file through \code{meld}, and pastes in the result
 }
 
@@ -106,6 +106,6 @@ meld(
     "{",
     "    double `names` = `1:3`;",
     "    double `dontdothis` = this_doesnt_matter;",
-    "    return `paste(names, sep = " + ")`;",
+    "    return `paste(names, sep = ' + ')`;",
     "}")
 }
