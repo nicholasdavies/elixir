@@ -4,7 +4,7 @@ Title: Transmutation of Languages
 Version: 0.0.0.9000
 Authors@R: person("Nicholas", "Davies", email = "nicholas.davies@lshtm.ac.uk", role = c("cre", "aut", "cph"), comment = c(ORCID = "0000-0002-1740-1412"))
 Description: Tools for transforming 'R' expressions, including into other programming languages.
-URL: https://github.com/nicholasdavies/elixir
+URL: https://github.com/nicholasdavies/elixir, https://nicholasdavies.github.io/elixir/
 BugReports: https://github.com/nicholasdavies/elixir/issues
 License: MIT + file LICENSE
 Encoding: UTF-8
