@@ -80,7 +80,7 @@
 #'     "{",
 #'     "    double `names` = `1:3`;",
 #'     "    double `dontdothis` = this_doesnt_matter;",
-#'     "    return `paste(names, sep = " + ")`;",
+#'     "    return `paste(names, sep = ' + ')`;",
 #'     "}")
 #' @export
 meld = function(..., file = NULL, rules = NULL, reindent = TRUE, ipath = ".", env = rlang::env_clone(parent.frame()))
