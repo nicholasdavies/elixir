@@ -8,15 +8,15 @@
 #' This function is experimental.
 #'
 #' @details
-#' First, any blocks of text starting with the delimiter `/***R` and
-#' ending with `*/` are run as R code.
+#' As `meld` works through each line of the text, any blocks of text starting
+#' with the delimiter `/***R` and ending with `*/` are run as R code.
 #'
-#' Second, any substrings in the text delimited by `` `backticks` ``
-#' are interpreted as R expressions to be substituted into the line. If
-#' any of the backticked expressions are length 0, the line is commented
-#' out (with the message "\[skipped\]" appended) using the `comment` element
-#' of `rules`. If any of the backticked expressions are length L > 1, the
-#' entire interpreted line is repeated L times, separated by newlines and
+#' Outside these blocks, any substrings in the text delimited by
+#' `` `backticks` `` are interpreted as R expressions to be substituted into
+#' the line. If any of the backticked expressions are length 0, the line is
+#' commented out (with the message "\[skipped\]" appended) using the `comment`
+#' element of `rules`. If any of the backticked expressions are length L > 1,
+#' the entire interpreted line is repeated L times, separated by newlines and
 #' with elements of the expression in sequence.
 #'
 #' There are some special sequences:
@@ -59,6 +59,7 @@
 #' * `indent_both` Character vector of tokens which decrease, then increase the
 #' indent level (see [reindent()]).
 #' * `ignore` Comment and string literal delimiters (see [reindent()]).
+#'
 #' If `NULL`, the default, either guess rules from the file extension, or if
 #' that is not possible, do not put in 'skipped' comments and do not reindent
 #' the result. `NA` to not try to guess.
@@ -79,7 +80,7 @@
 #'     "{",
 #'     "    double `names` = `1:3`;",
 #'     "    double `dontdothis` = this_doesnt_matter;",
-#'     "    return a + b + c;",
+#'     "    return `paste(names, sep = " + ")`;",
 #'     "}")
 #' @export
 meld = function(..., file = NULL, rules = NULL, reindent = TRUE, ipath = ".", env = rlang::env_clone(parent.frame()))

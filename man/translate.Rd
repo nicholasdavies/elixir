@@ -48,8 +48,9 @@ should never be enclosed in parentheses. The default and usual value is
 integer(0), but (for example) it can be 2 for the \code{[} operator, as
 parentheses within the second argument (the content of the brackets)
 are redundant.
-The function \code{elixir:::op} can help to assemble such lists.
 }
+
+The function \code{elixir:::op} can help to assemble such lists.
 \item \code{paren} a \code{\link[glue:glue]{glue::glue()}} format string with \code{{x}} standing in for the
 enclosed expression. Describes how parentheses are expressed in the
 target language. Example: \code{"({x})"} is correct for virtually all

@@ -68,4 +68,3 @@ print(expr)
 \code{\link[=expr_match]{expr_match()}}, \code{\link[=expr_locate]{expr_locate()}} which return indices to
 subexpressions.
 }
-\keyword{internal}

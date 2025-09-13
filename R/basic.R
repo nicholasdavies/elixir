@@ -237,7 +237,6 @@ expr_sub = function(expr, idx, env = parent.frame())
 }
 
 #' @rdname expr_sub
-#' @keywords internal
 #' @export
 `expr_sub<-` = function(expr, idx, env = parent.frame(), value)
 {

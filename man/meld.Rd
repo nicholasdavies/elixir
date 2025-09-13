@@ -29,10 +29,11 @@ two strings for delimited comments.
 \item \code{indent_both} Character vector of tokens which decrease, then increase the
 indent level (see \code{\link[=reindent]{reindent()}}).
 \item \code{ignore} Comment and string literal delimiters (see \code{\link[=reindent]{reindent()}}).
+}
+
 If \code{NULL}, the default, either guess rules from the file extension, or if
 that is not possible, do not put in 'skipped' comments and do not reindent
-the result. \code{NA} to not try to guess.
-}}
+the result. \code{NA} to not try to guess.}
 
 \item{reindent}{If \code{TRUE}, the default, reindent according to \code{rules}. If
 \code{FALSE}, do not reindent.}
@@ -54,15 +55,15 @@ text after performing substitutions of R code.
 This function is experimental.
 }
 \details{
-First, any blocks of text starting with the delimiter \verb{/***R} and
-ending with \verb{*/} are run as R code.
+As \code{meld} works through each line of the text, any blocks of text starting
+with the delimiter \verb{/***R} and ending with \verb{*/} are run as R code.
 
-Second, any substrings in the text delimited by \code{`backticks`}
-are interpreted as R expressions to be substituted into the line. If
-any of the backticked expressions are length 0, the line is commented
-out (with the message "[skipped]" appended) using the \code{comment} element
-of \code{rules}. If any of the backticked expressions are length L > 1, the
-entire interpreted line is repeated L times, separated by newlines and
+Outside these blocks, any substrings in the text delimited by
+\code{`backticks`} are interpreted as R expressions to be substituted into
+the line. If any of the backticked expressions are length 0, the line is
+commented out (with the message "[skipped]" appended) using the \code{comment}
+element of \code{rules}. If any of the backticked expressions are length L > 1,
+the entire interpreted line is repeated L times, separated by newlines and
 with elements of the expression in sequence.
 
 There are some special sequences:
@@ -72,10 +73,12 @@ There are some special sequences:
 \item \code{`$expr`}subs in \code{expr} only on the last line of a multi-line expansion
 \item \code{`!$expr`} subs in \code{expr} on all but the last line of a multi-line expansion
 \item \code{`#include <file>`} runs \code{file} through \code{meld} and pastes in the result
+\item \code{`#include "file"`} interprets \code{file} as an R expression resolving to
+a filename, runs that file through \code{meld}, and pastes in the result
 }
 
 The \verb{#include} command must appear by itself on a line, and searches for
-\code{file} in the path \code{ipath}.
+files in the path \code{ipath}.
 
 The function tries to guess \code{rules} from the file extension if that is
 possible. If the file extension is .c, then \code{"C"} is guessed; for .h, .hpp,
@@ -103,6 +106,6 @@ meld(
     "{",
     "    double `names` = `1:3`;",
     "    double `dontdothis` = this_doesnt_matter;",
-    "    return a + b + c;",
+    "    return `paste(names, sep = " + ")`;",
     "}")
 }

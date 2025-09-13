@@ -26,6 +26,7 @@
 #'      integer(0), but (for example) it can be 2 for the `[` operator, as
 #'      parentheses within the second argument (the content of the brackets)
 #'      are redundant.
+#'
 #'    The function `elixir:::op` can help to assemble such lists.
 #' * `paren` a [glue::glue()] format string with `{x}` standing in for the
 #'    enclosed expression. Describes how parentheses are expressed in the

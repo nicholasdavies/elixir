@@ -66,7 +66,7 @@
 #' there is one match, the details of which are contained in an object of
 #' class `expr_match`. This object contains the following elements:
 #' - `match = quote(3.14159 + 2.71828)`, the entire match;
-#' - `loc = NULL`, the location of the match within the expression ;
+#' - `loc = NULL`, the location of the match within the expression;
 #' - `A = 3.14159`, the part of the match corresponding to the *capture token*
 #'   `.A`;
 #' - `B = 2.71828`, the part of the match corresponding to the *capture token*
