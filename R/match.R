@@ -431,7 +431,7 @@ print.expr_match = function(x, ...)
 {
     fmt = function(x) {
         sapply(x, function(x) {
-            if (is.integer(x)) { # so deparse doesn't turn e.g. c(2L,1L) into 2:1
+            if (is.integer(x) && length(x) > 1) { # so deparse doesn't turn e.g. c(2L,1L) into 2:1
                 paste0("c(", paste0(x, "L", collapse = ", "), ")")
             } else {
                 deparse(x, backtick = TRUE, control = "all")
