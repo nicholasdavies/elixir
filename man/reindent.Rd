@@ -50,7 +50,18 @@ end
 
 the \verb{else} keyword both decreases and increases the indent level.
 
-Some unusual character sequences may break \code{\link[=reindent]{reindent()}}.
+\code{\link[=reindent]{reindent()}} supports "raw strings" in R, C, C++, and Lua code but only in
+limited cases. In R, when using \link[=Quotes]{raw character constants} you must
+use an uppercase \code{R}, the double quote symbol and zero to two hyphens. In
+C/C++, when using
+\href{https://en.cppreference.com/w/cpp/language/string_literal.html}{raw string literals}
+you must use the prefix \code{R}, and zero to two hyphens as the delimiter char
+sequence (plus parentheses). In Lua, you can use
+\href{https://www.lua.org/manual/5.2/manual.html#3.1}{long brackets} with zero
+to two equals signs. Any other attempt to use raw strings will probably
+break \code{\link[=reindent]{reindent()}}.
+
+Other unusual character sequences may also break \code{\link[=reindent]{reindent()}}.
 }
 \examples{
 reindent(

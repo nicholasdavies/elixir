@@ -24,7 +24,18 @@
 #'
 #' the `else` keyword both decreases and increases the indent level.
 #'
-#' Some unusual character sequences may break [reindent()].
+#' [reindent()] supports "raw strings" in R, C, C++, and Lua code but only in
+#' limited cases. In R, when using [raw character constants][Quotes] you must
+#' use an uppercase `R`, the double quote symbol and zero to two hyphens. In
+#' C/C++, when using
+#' [raw string literals](https://en.cppreference.com/w/cpp/language/string_literal.html)
+#' you must use the prefix `R`, and zero to two hyphens as the delimiter char
+#' sequence (plus parentheses). In Lua, you can use
+#' [long brackets](https://www.lua.org/manual/5.2/manual.html#3.1) with zero
+#' to two equals signs. Any other attempt to use raw strings will probably
+#' break [reindent()].
+#'
+#' Other unusual character sequences may also break [reindent()].
 #'
 #' @param lines Character vector with lines of text; can have internal
 #'     newlines.
@@ -121,7 +132,7 @@ reindent = function(lines, rules, tab = "    ", start = 0L)
                     # If comment is to closing symbol, try to find in this line
                     locations_end = ilevel != 0 & locate_end_ignore(tokens, ign);
                     if (any(locations_end)) {
-                        # Closing symbol in this line: cut out and keep looking for comments
+                        # Closing symbol in this line: cut out and keep looking for ignores
                         cut_start = which(locations[[itype]])[1];
                         cut_end = which(locations_end & seq_along(locations_end) > cut_start)[1];
                         tokens[cut_start:cut_end] = "";
@@ -154,8 +165,13 @@ reindent = function(lines, rules, tab = "    ", start = 0L)
         indent_levels[l] = indent_level + min(c(0L, itrace));
         indent_level = indent_level + tail(c(0L, itrace), 1L);
     }
+
+    # Actually do indentation.
+    # Generate leading whitespace
     tabs = stringr::str_dup(tab, indent_levels);
+    # Attach to all lines
     ind_lines = stringr::str_c(tabs, stringr::str_trim(lines, "left"));
+    # Use indented lines only when non-NA level
     lines = ifelse(is.na(indent_levels),
         lines,
         ind_lines
