@@ -122,6 +122,7 @@ meld = function(..., file = NULL, rules = NULL, reindent = TRUE, ipath = ".", en
         lines = readLines(file, warn = FALSE)
         filename = file;
     } else {
+        # TODO split by newline? This would allow meld(r"-[ ... ]-")
         lines = as.character(c(...));
         filename = "... argument";
     }
@@ -185,6 +186,13 @@ meld = function(..., file = NULL, rules = NULL, reindent = TRUE, ipath = ".", en
             R_blocks = R_blocks[-blocks];
             R_block_open = R_block_open[-blocks];
         }
+
+        # TODO just have one version of include which takes a character string
+        # this is passed through R regardless so e.g. #include "file.c" looks
+        # for the file file.c, while #include myfile looks for the file
+        # whose name is in the R expression myfile (e.g. if myfile = "foo.h")
+        # TODO `#something xxx` could run a function something(xxx)? OTOH
+        # we can just do `something(xxx)` so that's not really needed
 
         # Execute #include <file> command if present
         match_include = regmatches(lines[l],
@@ -271,6 +279,7 @@ meld = function(..., file = NULL, rules = NULL, reindent = TRUE, ipath = ".", en
         # This is so lines like this
         #     `lines_of_code`
         # include the spacing before `lines_of_code` for each line
+        # TODO why is this needed? i guess for the \n inclusion within the character
         if (length(sE) == 1 && sL[1] %like% "^[ \t]+$" && is.character(sE[[1]]) && any(sE[[1]] %like% "\n"))
         {
             sE[[1]] = stringr::str_replace_all(sE[[1]], "\n", paste0("\n", sL[1]));
