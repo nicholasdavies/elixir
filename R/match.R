@@ -449,6 +449,6 @@ print.expr_match = function(x, ...)
         )
         str = paste0("  list(", str, ")", ifelse(seq_along(x) < length(x), ",", ""), collapse = "\n")
 
-        cat("list(\n", str, "\n)\n", sep = "")
+        cat("expr_match: list(\n", str, "\n)\n", sep = "")
     }
 }
