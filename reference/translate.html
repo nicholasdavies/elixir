@@ -112,7 +112,29 @@ operand to translate, and the value should be a function of a single
 argument (the operand) returning a character string.</p></li>
 </ul><p>It may be helpful to inspect <code>elixir:::ruleset</code> to clarify the above
 format.</p>
-    </div>
+<p>There are some important shortcomings to <code>translate()</code>. Here are some
+potential pitfalls:</p><ul><li><p>Named arguments are not supported, because we cannot translate an R
+function call like <code>mean(x, na.rm = TRUE)</code> without knowing which
+parameter of <code>mean</code> matches to <code>na.rm</code>.</p></li>
+<li><p>Division: An R expression like <code>1/3</code> gets translated into <code>1./3.</code> in
+C/C++, as numeric literals are coerced to type <code>double</code>. So both of these
+evaluate to 0.333. However, the R expression <code>1L/3L</code> will get translated
+into <code>1/3</code> in C/C++, which evaluates to 0 (as it is integer division).</p></li>
+<li><p>Modulo: R uses "Knuth's modulo", where <code>a %% b</code> has the same sign as <code>b</code>.
+Lua also uses Knuth's modulo, but C/C++ use "truncated modulo", where
+<code>a % b</code> has the same sign as <code>a</code>. (see
+<a href="https://en.wikipedia.org/wiki/Modulo#Variants_of_the_definition" class="external-link">Wikipedia</a>
+for details). So when converting a modulo expression from R to C/C++, a
+call to the function <code>kmod</code> is generated in the C/C++ expression. This is
+not a standard library function, so you will have to provide a definition
+yourself. A workable definition is:
+<code>double kmod(double x, double y) { double r = fmod(x, y); return r &amp;&amp; r &lt; 0 != y &lt; 0 ? r + y : r; }</code>
+(R) or <code>a % b</code> (Lua)</p></li>
+<li><p>Types: In R, the type of <code>a %% b</code> and of <code>a %/% b</code> depends on the type of
+<code>a</code> and <code>b</code> (if both are integers, the result is an integer; if at least
+one is numeric, the result is numeric).</p></li>
+<li><p>Chained assignment does not work in Lua.</p></li>
+</ul></div>
 
     <div class="section level2">
     <h2 id="ref-examples">Examples<a class="anchor" aria-label="anchor" href="#ref-examples"></a></h2>
