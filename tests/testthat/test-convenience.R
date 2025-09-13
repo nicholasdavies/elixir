@@ -1,4 +1,30 @@
 test_that("match convenience wrappers work", {
+    expect_identical(expr_count({ y = a*x + b }, { .A * .B }), 1L)
+
+    expect_identical(expr_detect({ y = a*x + b }, { .A * .B }), TRUE)
+
+    expect_identical(expr_extract({ y = a*x + b }, { .A * .B }),
+        list(quote(a * x)))
+    expect_identical(expr_extract({ y = a*x + b }, { .A * .B }, "match"),
+        list(quote(a * x)))
+    expect_identical(expr_extract({ y = a*x + b }, { .A * .B }, "A"),
+        list(quote(a)))
+    expect_identical(expr_extract({ y = a*x + b }, { .A / .B }, "A"),
+        NULL)
+    expect_identical(expr_extract({ y = a*x + b }, { .A * .B }, ".A", dotnames = TRUE),
+        list(quote(a)))
+    expect_identical(expr_locate({ y = a*x + b }, { .A * .B }),
+        list(c(3L, 2L)))
+
+    expect_identical(expr_extract({ y = a*x + b }, { .A * .B }, "match", gather = TRUE),
+        list(quote(a * x)))
+    expect_identical(expr_extract({ y = a*x + b }, { .A * .B }, "A", gather = TRUE),
+        list(quote(a)))
+    expect_identical(expr_locate({ y = a*x + b }, { .A * .B }, gather = TRUE),
+        list(c(3L, 2L)))
+})
+
+test_that("match convenience wrappers work (multiple exprs)", {
     exprs = expr_list(
         { y = a*x^2 + b*x + c },
         { c^2 = a^2 + b^2 },
