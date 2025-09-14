@@ -95,10 +95,12 @@ reindent = function(lines, rules, tab = "    ", start = 0L)
                 # Look for sought-for end token
                 locations_end = locate_end_ignore(tokens, ignore[[in_ignore]]);
                 if (any(locations_end)) {
-                    # Closing symbol in this line: cut out and keep looking for comments
+                    # Closing symbol in this line: cut out and do not indent this line
                     cut_end = which(locations_end)[1];
                     tokens = tokens[-(1:cut_end)];
                     in_ignore = 0;
+                    indent_levels[l] = NA;
+                    next;
                 } else {
                     # If not here, preserve indent level from original and process next line
                     indent_levels[l] = NA;
