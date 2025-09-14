@@ -37,21 +37,25 @@ test_that("expr_apply works", {
     expr_apply({a + b}, function(x) { string <<- paste(string, paste0(all.names(x), collapse = "")); x }, into = "leaves")
     expect_identical(string, " + a b")
 
+    expect_error(expr_apply({a + b}, function(x) x, into = "error"))
+
     # Different modes of `how`.
-    x = list(quote(a), list(quote(b + c), list(quote(d + e))))
+    x = list(a = quote(a), list(quote(b + c), list(quote(d + e))))
     expect_identical(expr_apply(x, function(x) { if (all(as.character(x) %in% letters)) quote(.) else x }, into = TRUE, how = "replace"),
-        list(quote(.), list(quote(. + .), list(quote(. + .)))))
+        list(a = quote(.), list(quote(. + .), list(quote(. + .)))))
     expect_identical(expr_apply(x, function(x) { if (all(as.character(x) %in% letters)) quote(.) else x }, into = TRUE, how = "unlist"),
-        list(quote(.), quote(. + .), quote(. + .)))
+        list(a = quote(.), quote(. + .), quote(. + .)))
     expect_identical(expr_apply(x, function(x) { if (all(as.character(x) %in% letters)) quote(.) else x }, into = TRUE, how = "unique"),
         list(quote(.), quote(. + .)))
 
     # Use of second and third params of x.
     expect_identical(expr_apply(x,
-        function(x, name, idx) { if (is.null(name[[1]])) quote(x) else quote(y) },
+        function(x, name) { if (is.null(name[[1]])) quote(x) else quote(y) },
         into = "leaves", order = "post", how = "unlist"),
-        list(quote(y), quote(x(x, x)), quote(x(x, x))))
+        list(a = quote(y), quote(x(x, x)), quote(x(x, x))))
 
     expect_identical(expr_apply(x, function(x, name, idx) { idx }, into = FALSE),
-        list(1L, list(c(2L,1L), list(c(2L,2L,1L)))))
+        list(a = 1L, list(c(2L,1L), list(c(2L,2L,1L)))))
+
+    expect_error(expr_apply(x, function(x, name, idx, foo) { idx }, into = FALSE))
 })

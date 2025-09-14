@@ -12,9 +12,15 @@ test_that("expr_replace works", {
     # Replacing in an expr_list; replacing alternatives
     exprs = expr_list(quote(a + x), quote(a + y))
     expect_identical(expr_replace(exprs, {a}, {b}, {x}, {y}), expr_list({b + y}, {b + y}))
-    expect_identical(expr_replace(exprs, {a}, {b}, {x}, {y}, n = 1), expr_list({b + y}, {b + y}))
+    expect_identical(expr_replace(exprs,
+        patterns = expr_list({a}, {x}), replacements = expr_list({b}, {y}), n = 1),
+        expr_list({b + y}, {b + y}))
     expect_identical(expr_replace(exprs, {a} ? {x}, {b} ? {y}, n = 1), expr_list({b + x}, {b + y}))
     expect_identical(expr_replace(exprs, {a} ? {x}, {b} ? {y}), expr_list({b + y}, {b + y}))
+    expect_error(expr_replace(exprs, {a}, {b}, {x}))
+    expect_error(expr_replace(exprs,
+        patterns = expr_list({a}), replacements = expr_list({b}, {y}), n = 1))
+    expect_error(expr_replace(exprs, {a}, {b} ? {y}))
 
     # References to temporary match entries
     expect_identical(expr_replace({ E = m * c^2 },
