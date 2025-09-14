@@ -29,4 +29,15 @@ else if (y != 2) {
 else if (z == 3) {
     cout << "z" << "\\n";
 }')
+
+    expect_warning(meld(c("malformed \\ ", "backslash")), "terminal backslash plus whitespace")
+    expect_identical(meld(c("OK \\", "backslash")), "OK backslash")
+    expect_error(meld("`letters` `month.abb`"), "must all have the same length")
+    expect_error(meld(file = test_path("meld.c"), ipath = test_path()), "Cannot find")
+    expect_error(meld(file = test_path("meld.cpp")), "Unterminated R block")
+    expect_identical(meld(file = test_path("meld.lua"), ipath = test_path()), "\n-- `list()` [skipped]")
+    expect_identical(meld(file = test_path("meld.R")), "")
+    expect_identical(meld('    `"one\\ntwo"`'), "    one\n    two")
+    expect_identical(meld("/***R\nlist()\n*/", rules = NA), "")
+    expect_identical(meld("`list()`", rules = NA), "")
 })

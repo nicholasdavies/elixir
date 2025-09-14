@@ -70,6 +70,16 @@ test_that("expr_match works at top level", {
     expect_identical(expr_match( { 2 }, ~{ `.A:integer|A > 1` } ), NULL)
     expect_identical(expr_match( { 2 }, ~{ `.A:integer|A > 2` } ), NULL)
     expect_identical(expr_match( { "hi" }, ~{ `.A:character|A == "hi"` } ), M1("hi", A = "hi"))
+
+    # Limit number of matches
+    expect_identical(expr_match({ a + b + c }, { .A }, n = 1),
+        structure(list(list(match = quote(`+`), loc = 1L, A = quote(`+`))), class = "expr_match"))
+    expect_identical(expr_match({ a + b + c }, { .A }, n = 0), NULL)
+
+    # Behaviour of matching when arguments are named
+    expect_identical(expr_match({ f(a = 1) }, {f(.A)}), NULL)
+    expect_identical(expr_match({ f(a = 1) }, {f(..A)}), NULL)
+    expect_identical(expr_match({ f(a = 1) }, {f(...A)}), M1(f(a = 1), A = list(a = 1)))
 })
 
 test_that("expr_match works into and alternatively", {
@@ -105,4 +115,15 @@ test_that("expr_match works into and alternatively", {
     expect_identical(expr_match({ 1 + 2 * 3 }, { `+` } ? { `/` } ? ~{ `*` }),
         structure(list(list(alt = 1L, match = quote(`+`), loc = 1L)), class = "expr_match"))
 
+    # Printing of match
+    expect_output(elixir:::print.expr_match(expr_match({ 1 + 2 * 3 }, { `/` })), "NULL")
+    expect_output(print(expr_match({ 1 + 2 * 3 }, { `*` } ? { `+` } ? ~{ `/` })),
+        "expr_match: list(\n  list(alt = 2L, match = quote(`+`), loc = 1L),\n  list(alt = 1L, match = quote(`*`), loc = c(3L, 1L))\n)",
+        fixed = TRUE)
+})
+
+test_that("expr_match catches errors", {
+    expect_error(expr_match({ 1 + 2 * 3 }, expr_list({ `/` }, { `*` })))
+    expect_error(expr_match({ 1 + 2 * 3 }, { f(a = 1) }))
+    expect_warning(expr_match({ 1 }, { .A + .A }))
 })
