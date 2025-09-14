@@ -65,45 +65,72 @@ expr_list = function(..., env = parent.frame())
 
 #' @rdname expr_list
 #' @order 2
-#' @keywords internal
 #' @export
 `[.expr_list` = function(xl, i)
 {
     if (missing(i)) {
         return (xl)
     }
-    structure(`[.simple.list`(xl, i), class = "expr_list", into = attr(xl, "into")[i])
+    into = attr(xl, "into")[i]
+    into[is.na(into)] = FALSE # For case where any(i > length(xl))
+    structure(`[.simple.list`(xl, i), class = "expr_list", into = into)
+}
+
+rep_len_warn = function(x, length.out)
+{
+    if (length.out %% length(x) != 0) {
+        warning("number of items to replace is not a multiple of replacement length", call. = FALSE)
+    }
+    rep_len(x, length.out)
+}
+
+index_replace = function(xl, i, value, cl)
+{
+    if (is.null(value)) {
+        # value is NULL: omit elements in i
+        i = seq_along(xl)[i] # Work with positive, valid subscripts
+        i = i[!is.na(i)]
+        if (length(i) > 0) {
+            return (structure(`[.simple.list`(xl, -i), class = cl, into = attr(xl, "into")[-i]))
+        } else {
+            return (xl)
+        }
+    }
+
+    # To avoid recursing into this function below
+    l = unclass(xl);
+    into = attr(xl, "into");
+
+    # Expand length of list, if needed
+    if (any(i > length(xl))) {
+        l[i[i > length(xl)]] = list(NULL)
+        into[i[i > length(xl)]] = FALSE
+    }
+
+    nreplace = length(into[i]);
+
+    if (is(value, "expr_list")) {
+        l[i] = rep_len_warn(value, nreplace);
+        into[i] = rep_len(attr(value, "into"), nreplace);
+    } else if (is.list(value)) {
+        if (any(!sapply(value, function(x) { rlang::is_expression(x) || class(x) == "expr_alt" }))) {
+            stop("When replacing part of an ", cl, " with a list, each element of that list must be a valid expr_list element.")
+        }
+        l[i] = rep_len_warn(value, nreplace);
+    } else if (rlang::is_expression(value)) {
+        l[i] = rep_len_warn(list(value), nreplace);
+    } else {
+        stop("Can only replace part of an ", cl, " with an expr_list, a list of expressions, or an expression.")
+    }
+    structure(l, class = cl, into = into);
 }
 
 #' @rdname expr_list
 #' @order 3
-#' @keywords internal
 #' @export
 `[<-.expr_list` = function(xl, i, value)
 {
-    if (is.null(value)) {
-        # value is NULL: omit elements in i
-        return (structure(`[.simple.list`(xl, -i), class = "expr_list", into = attr(xl, "into")[-i]))
-    }
-
-    l = unclass(xl); # To avoid recursing into this function below
-    into = attr(xl, "into");
-    nreplace = length(into[i]);
-
-    if (is(value, "expr_list")) {
-        l[i] = rep_len(value, nreplace);
-        into[i] = rep_len(attr(value, "into"), nreplace);
-    } else if (is.list(value)) {
-        if (any(!sapply(value, function(x) { rlang::is_expression(x) || class(x) == "expr_alt" }))) {
-            stop("When replacing part of an expr_list with a list, each element of that list must be a valid expr_list element.")
-        }
-        l[i] = rep_len(value, nreplace);
-    } else if (rlang::is_expression(value)) {
-        l[i] = rep_len(list(value), nreplace);
-    } else {
-        stop("Can only replace part of an expr_list with an expr_list, a list of expressions, or an expression.")
-    }
-    structure(l, class = "expr_list", into = into);
+    index_replace(xl, i, value, "expr_list")
 }
 
 #' @keywords internal
@@ -141,35 +168,7 @@ print.expr_list = function(x, ...)
 #' @export
 `[<-.expr_alt` = function(xl, i, value)
 {
-    if (is.null(value)) {
-        # value is NULL: omit elements in i
-        if (is.logical(i)) { i = which(i) }
-        if (length(i) > 0) {
-            return (structure(`[.simple.list`(xl, -i), class = "expr_alt", into = attr(xl, "into")[-i]))
-        } else {
-            # This special case is needed, as we cannot do list[-numeric()] for the whole list.
-            return (xl)
-        }
-    }
-
-    l = unclass(xl); # To avoid recursing into this function below
-    into = attr(xl, "into");
-    nreplace = length(into[i]);
-
-    if (is(value, "expr_list")) {
-        l[i] = rep_len(value, nreplace);
-        into[i] = rep_len(attr(value, "into"), nreplace);
-    } else if (is.list(value)) {
-        if (any(!sapply(value, rlang::is_expression))) {
-            stop("When replacing part of an expr_alt with a list, each element of that list must be a valid expression.")
-        }
-        l[i] = rep_len(value, nreplace);
-    } else if (rlang::is_expression(value)) {
-        l[i] = rep_len(list(value), nreplace);
-    } else {
-        stop("Can only replace part of an expr_alt with an expr_list, a list of expressions, or an expression.")
-    }
-    structure(l, class = "expr_alt", into = into);
+    index_replace(xl, i, value, "expr_alt")
 }
 
 #' Get or set a subexpression
