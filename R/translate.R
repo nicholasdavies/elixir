@@ -116,6 +116,12 @@ translate_sub = function(x, rules)
         A = sapply(args, `[[`, 1) # each argument as a string
         P = sapply(args, `[[`, 2) # precedence of each argument's top level call, i.e. "lower-level precedence"
 
+        # TODO Do something with named elements! This could happen with
+        # e.g. [ or [[ operator (named args), function calls (named args)
+        if (any(rlang::have_name(args))) {
+            stop("No support for named args. f is ", f, ", names are ", paste(names(x), collapse = ", "))
+        }
+
         # Special treatment for "("
         # This is needed because we can't assign ( a high precedence (e.g. 0th)
         # in an ops table, as then e.g. (1+1) would come out ((1+1)) owing to
@@ -155,12 +161,6 @@ translate_sub = function(x, rules)
 
         A[needed] =
             glue::glue_data(list(x = A[needed]), rules$paren)
-
-        # TODO Do something with named elements! This could happen with
-        # e.g. [ or [[ operator (named args), function calls (named args)
-        if (any(rlang::have_name(x))) {
-            stop("No support for named args. f is ", f, ", names are ", paste(names(x), collapse = ", "))
-        }
 
         # Return result
         return (list(
