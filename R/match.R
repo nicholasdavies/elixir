@@ -287,7 +287,7 @@ build_match = function(match, loc, captures, capture_names)
     setNames(c(list(match, loc), captures), c("match", "loc", capture_names))
 }
 
-# Workhorse for match_expr
+# Workhorse for expr_match
 match_sub = function(expr, pattern, n, into, dotnames, loc, parent_match, env)
 {
     if (n <= 0) {

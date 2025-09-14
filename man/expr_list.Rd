@@ -63,4 +63,3 @@ expr_list(
 var = as.name("myvar")
 expr_list({ 1 }, { !!var }, { (!!var)^2 })
 }
-\keyword{internal}
