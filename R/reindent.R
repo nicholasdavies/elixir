@@ -137,6 +137,9 @@ reindent = function(lines, rules, tab = "    ", start = 0L)
                         # Closing symbol in this line: cut out and keep looking for ignores
                         cut_start = which(locations[[itype]])[1];
                         cut_end = which(locations_end & seq_along(locations_end) > cut_start)[1];
+                        if (is.na(cut_end)) {
+                            cut_end = length(tokens);
+                        }
                         tokens[cut_start:cut_end] = "";
                         # We replace the cut-out tokens with "" rather than removing them
                         # so that removing an ignore from a line doesn't create new
@@ -200,11 +203,22 @@ locate = function(tokens, what)
 locate_end_ignore = function(tokens, ign)
 {
     loc = locate(tokens, ign[2]);
-    while (length(ign) >= 4) {
-        ign = ign[c(-1, -2)]
-        loc_neg = data.table::shift(locate(tokens, ign[1]), n = length(ign[[1]]) - 1L, fill = FALSE);
-        loc_pos = data.table::shift(locate(tokens, ign[2]), n = length(ign[[2]]) - 1L, fill = FALSE);
-        loc = loc & !(loc_neg & !loc_pos);
+    if (length(ign) == 3) {
+        neg = list(c(ign[[3]], ign[[2]]))
+        pos = list(c(ign[[3]], neg[[1]]))
+        while (TRUE) {
+            ln = locate(tokens, neg)
+            if (any(ln)) {
+                lp = locate(tokens, pos)
+                loc_neg = data.table::shift(ln, n = length(neg) - 1L, fill = FALSE);
+                loc_pos = data.table::shift(lp, n = length(pos) - 1L, fill = FALSE);
+                loc = loc & !(loc_neg & !loc_pos);
+                neg = list(c(ign[[3]], pos[[1]]))
+                pos = list(c(ign[[3]], neg[[1]]))
+            } else {
+                break;
+            }
+        }
     }
     return (loc)
 }
