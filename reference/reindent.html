@@ -15,7 +15,7 @@ This function is experimental."></head><body>
 
     <a class="navbar-brand me-2" href="../index.html">elixir</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.0.0.9000</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.1.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -97,7 +97,17 @@ the same time. For example, in this Lua code:</p>
 <span id="cb1-3"><a href="#cb1-3" tabindex="-1"></a><span class="cf">else</span></span>
 <span id="cb1-4"><a href="#cb1-4" tabindex="-1"></a>    print <span class="st">'not one'</span></span>
 <span id="cb1-5"><a href="#cb1-5" tabindex="-1"></a>end</span></code></pre><p></p></div>
-<p>the <code>else</code> keyword both decreases and increases the indent level.</p>
+<p>the <code>if</code> keyword increases the indent level, the <code>else</code> keyword both
+decreases and increases the indent level, and the <code>end</code> keyword decreases
+the indent level.</p>
+<p>If provided, the <code>ignore</code> element of <code>rules</code> should be a list of character
+vectors. A character vector of length one is assumed to start a comment that
+runs to the end of the line (e.g. <code>"#"</code> in R). If length two, the two
+symbols are assumed to start and end a comment or string (e.g. <code>"/*"</code> and
+<code>"*/"</code> in C). If length three, then the first two symbols are start and end
+delimiters of a comment or string, while the third symbol is an "escape"
+character that escapes the end delimiter (and can also escape itself). This
+is typically a backslash.</p>
 <p><code>reindent()</code> supports "raw strings" in R, C, C++, and Lua code but only in
 limited cases. In R, when using <a href="https://rdrr.io/r/base/Quotes.html" class="external-link">raw character constants</a> you must
 use an uppercase <code>R</code>, the double quote symbol and zero to two hyphens. In
