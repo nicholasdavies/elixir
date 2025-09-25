@@ -31,7 +31,6 @@ usethis::write_union("./.Rbuildignore", "^local$")
 # Import package
 usethis::use_package("methods")
 usethis::use_package("rlang")
-usethis::use_package("data.table")
 usethis::use_package("stringr")
 usethis::use_package("glue")
 

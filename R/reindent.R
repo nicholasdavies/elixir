@@ -203,7 +203,7 @@ locate = function(tokens, what)
     for (k in what) {
         start = rep(TRUE, length(tokens));
         for (j in seq_along(k)) {
-            start = start & data.table::shift(tokens == k[j], n = 1L - j, fill = FALSE)
+            start = start & lshift(tokens == k[j], j - 1L)
         }
         pos = pos | start;
     }
@@ -221,8 +221,8 @@ locate_end_ignore = function(tokens, ign)
             ln = locate(tokens, neg)
             if (any(ln)) {
                 lp = locate(tokens, pos)
-                loc_neg = data.table::shift(ln, n = length(neg) - 1L, fill = FALSE);
-                loc_pos = data.table::shift(lp, n = length(pos) - 1L, fill = FALSE);
+                loc_neg = rshift(ln, length(neg) - 1L);
+                loc_pos = rshift(lp, length(pos) - 1L);
                 loc = loc & !(loc_neg & !loc_pos);
                 neg = list(c(ign[[3]], pos[[1]]))
                 pos = list(c(ign[[3]], neg[[1]]))

@@ -17,7 +17,6 @@ Encoding: UTF-8
 Imports: 
  methods,
  rlang,
- data.table,
  stringr,
  glue
 Suggests:
