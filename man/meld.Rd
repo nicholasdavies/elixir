@@ -106,6 +106,6 @@ meld(
     "{",
     "    double `names` = `1:3`;",
     "    double `dontdothis` = this_doesnt_matter;",
-    "    return `paste(names, sep = ' + ')`;",
+    "    return `paste(names, collapse = ' + ')`;",
     "}")
 }
