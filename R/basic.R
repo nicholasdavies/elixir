@@ -161,9 +161,12 @@ print.expr_list = function(x, ...)
     cat("expr_list of length ", length(x), ": ", paste0(str, collapse = ", "), sep = "")
 }
 
+#' Assign to part of an `expr_alt`.
+#'
 #' This exists primarily so that `expr_apply` can be applied to an `expr_list`,
 #' which may potentially contain elements of class `expr_alt`.
 #'
+#' @return The modified object of class `"expr_alt"`.
 #' @keywords internal
 #' @export
 `[<-.expr_alt` = function(xl, i, value)
@@ -209,7 +212,7 @@ print.expr_list = function(x, ...)
 #' @param env Environment for any injections in `expr` (see
 #' [expression][elixir-expression]).
 #' @param value Replacement; an expression.
-#' @return The subexpression, which can be modified.
+#' @return The element of the expression selected by `idx`.
 #' @seealso [expr_match()], [expr_locate()] which return indices to
 #' subexpressions.
 #' @examples
@@ -528,6 +531,15 @@ NULL
 #' tricky. Packages such as `rlang` help to make this task easier. `elixir`
 #' makes a few extra shortcuts available, and is geared for advanced R
 #' users.
+#'
+#' `elixir` provides functions for finding, extracting, and replacing patterns
+#' in 'R' language objects, similarly to how regular expressions can be used to
+#' find, extract, and replace patterns in text. It also provides functions for
+#' generating code using specially-formatted template files and for translating
+#' 'R' expressions into similar expressions in other programming languages.
+#'
+#' The package may be helpful for advanced uses of 'R' expressions, such as
+#' developing domain-specific languages.
 #'
 #' @section Find and replace for language objects:
 #'

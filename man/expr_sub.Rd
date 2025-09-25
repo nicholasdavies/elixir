@@ -22,7 +22,7 @@ expression from the list.}
 \item{value}{Replacement; an expression.}
 }
 \value{
-The subexpression, which can be modified.
+The element of the expression selected by \code{idx}.
 }
 \description{
 These functions allow you to extract and/or modify a subexpression within an

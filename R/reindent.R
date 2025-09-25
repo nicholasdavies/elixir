@@ -22,7 +22,18 @@
 #' end
 #' ```
 #'
-#' the `else` keyword both decreases and increases the indent level.
+#' the `if` keyword increases the indent level, the `else` keyword both
+#' decreases and increases the indent level, and the `end` keyword decreases
+#' the indent level.
+#'
+#' If provided, the `ignore` element of `rules` should be a list of character
+#' vectors. A character vector of length one is assumed to start a comment that
+#' runs to the end of the line (e.g. `"#"` in R). If length two, the two
+#' symbols are assumed to start and end a comment or string (e.g. `"/*"` and
+#' `"*/"` in C). If length three, then the first two symbols are start and end
+#' delimiters of a comment or string, while the third symbol is an "escape"
+#' character that escapes the end delimiter (and can also escape itself). This
+#' is typically a backslash.
 #'
 #' [reindent()] supports "raw strings" in R, C, C++, and Lua code but only in
 #' limited cases. In R, when using [raw character constants][Quotes] you must

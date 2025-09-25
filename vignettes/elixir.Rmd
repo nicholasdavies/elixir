@@ -85,7 +85,7 @@ func <- function(t, y, parms)
 # matplot(sol[, 1], sol[, -1], type = "l")
 ```
 
-![](ode_plot.png)
+![Oscillating time series of predator and prey population size](ode_plot.png)\
 
 If you run those last two lines that are commented out, you should see the
 solution plotted as above. (The lines are commented out so that `deSolve` isn't
@@ -340,7 +340,7 @@ system <- quote({
 run_ode(system)
 ```
 
-![](ode_plot.png)
+![Oscillating time series of predator and prey population size](ode_plot.png)\
 
 # Other `elixir` features
 

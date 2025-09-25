@@ -2,10 +2,12 @@
 % Please edit documentation in R/basic.R
 \name{[<-.expr_alt}
 \alias{[<-.expr_alt}
-\title{This exists primarily so that \code{expr_apply} can be applied to an \code{expr_list},
-which may potentially contain elements of class \code{expr_alt}.}
+\title{Assign to part of an \code{expr_alt}.}
 \usage{
 \method{[}{expr_alt}(xl, i) <- value
+}
+\value{
+The modified object of class \code{"expr_alt"}.
 }
 \description{
 This exists primarily so that \code{expr_apply} can be applied to an \code{expr_list},

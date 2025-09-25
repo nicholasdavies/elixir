@@ -1,23 +1,29 @@
 Package: elixir
 Type: Package
 Title: Transmutation of Languages
-Version: 0.0.0.9000
+Version: 0.1.0
 Authors@R: person("Nicholas", "Davies", email = "nicholas.davies@lshtm.ac.uk", role = c("cre", "aut", "cph"), comment = c(ORCID = "0000-0002-1740-1412"))
-Description: Tools for transforming 'R' expressions, including into other programming languages.
+Description: Tools for transforming 'R' expressions. Provides functions for 
+ finding, extracting, and replacing patterns in 'R' language objects, similarly 
+ to how regular expressions can be used to find, extract, and replace patterns 
+ in text. Also provides functions for generating code using specially-formatted 
+ template files and for translating 'R' expressions into similar expressions in 
+ other programming languages. The package may be helpful for advanced uses of 
+ 'R' expressions, such as developing domain-specific languages.
 URL: https://github.com/nicholasdavies/elixir, https://nicholasdavies.github.io/elixir/
 BugReports: https://github.com/nicholasdavies/elixir/issues
 License: MIT + file LICENSE
 Encoding: UTF-8
 Imports: 
-    methods,
-    rlang,
-    data.table,
-    stringr,
-    glue
+ methods,
+ rlang,
+ data.table,
+ stringr,
+ glue
 Suggests:
-    knitr,
-    rmarkdown,
-    testthat (>= 3.0.0)
+ knitr,
+ rmarkdown,
+ testthat (>= 3.0.0)
 LazyData: true
 Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.3.2
