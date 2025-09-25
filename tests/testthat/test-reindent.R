@@ -78,4 +78,10 @@ test_that("reindent works", {
     '        return (rlang::inject(rlang::expr(!!x[[2]]), env))',
     '    }',
     '}'))
+
+    quote_test = c(
+    "string = '\"{\\'[\\\\'",
+    "return (string)"
+    )
+    expect_identical(reindent(quote_test, "R"), quote_test)
 })
