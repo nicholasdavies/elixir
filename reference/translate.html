@@ -128,8 +128,7 @@ for details). So when converting a modulo expression from R to C/C++, a
 call to the function <code>kmod</code> is generated in the C/C++ expression. This is
 not a standard library function, so you will have to provide a definition
 yourself. A workable definition is:
-<code>double kmod(double x, double y) { double r = fmod(x, y); return r &amp;&amp; r &lt; 0 != y &lt; 0 ? r + y : r; }</code>
-(R) or <code>a % b</code> (Lua)</p></li>
+<code>double kmod(double x, double y) { double r = fmod(x, y); return r &amp;&amp; r &lt; 0 != y &lt; 0 ? r + y : r; }</code></p></li>
 <li><p>Types: In R, the type of <code>a %% b</code> and of <code>a %/% b</code> depends on the type of
 <code>a</code> and <code>b</code> (if both are integers, the result is an integer; if at least
 one is numeric, the result is numeric).</p></li>
