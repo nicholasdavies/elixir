@@ -63,7 +63,6 @@
 #'   not a standard library function, so you will have to provide a definition
 #'   yourself. A workable definition is:
 #'   `double kmod(double x, double y) { double r = fmod(x, y); return r && r < 0 != y < 0 ? r + y : r; }`
-#'   (R) or `a % b` (Lua)
 #' * Types: In R, the type of `a %% b` and of `a %/% b` depends on the type of
 #'   `a` and `b` (if both are integers, the result is an integer; if at least
 #'   one is numeric, the result is numeric).

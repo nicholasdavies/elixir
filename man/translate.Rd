@@ -88,7 +88,6 @@ call to the function \code{kmod} is generated in the C/C++ expression. This is
 not a standard library function, so you will have to provide a definition
 yourself. A workable definition is:
 \verb{double kmod(double x, double y) \{ double r = fmod(x, y); return r && r < 0 != y < 0 ? r + y : r; \}}
-(R) or \verb{a \% b} (Lua)
 \item Types: In R, the type of \code{a \%\% b} and of \code{a \%/\% b} depends on the type of
 \code{a} and \code{b} (if both are integers, the result is an integer; if at least
 one is numeric, the result is numeric).
