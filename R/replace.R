@@ -62,8 +62,8 @@ expr_replace = function(expr, ..., patterns, replacements, n = Inf, env = parent
             matches = expr_match(x, patterns[j], n = n, dotnames = TRUE)
             for (m in rev(seq_along(matches))) {
                 # If match: First get correct replacement for substitution
-                if (is(replacements[[j]], "expr_alt")) {
-                    if (!is(patterns[[j]], "expr_alt") || length(patterns[[j]]) != length(replacements[[j]])) {
+                if (inherits(replacements[[j]], "expr_alt")) {
+                    if (!inherits(patterns[[j]], "expr_alt") || length(patterns[[j]]) != length(replacements[[j]])) {
                         stop("When replacement is a set of alternatives, pattern must also be a set of alternatives of the same length.")
                     }
                     substitution = replacements[[j]][[matches[[m]]$alt]];
@@ -85,7 +85,7 @@ expr_replace = function(expr, ..., patterns, replacements, n = Inf, env = parent
     })
 
     # Return result
-    if (is(expr, "expr_wrap")) {
+    if (inherits(expr, "expr_wrap")) {
         return (result[[1]])
     } else {
         attributes(result) = attributes(expr)

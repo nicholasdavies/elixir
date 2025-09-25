@@ -42,10 +42,10 @@ functionality through the functions `expr_match()`, `expr_replace()`, and the
 "shortcut" functions `expr_count()`, `expr_detect()`, `expr_extract()`, and
 `expr_locate()`.
 
-Frequent users of the excellent [`stringr`](https://stringr.tidyverse.org/)
-package will recognize the intentional similarity between the above functions
-and `str_match()`, `str_replace()`, `str_count()`, `str_detect()`,
-`str_extract()`, and `str_locate()` from `stringr`.
+Frequent users of the [`stringr`](https://stringr.tidyverse.org/) package will 
+recognize the intentional similarity between the above functions and 
+`str_match()`, `str_replace()`, `str_count()`, `str_detect()`, `str_extract()`, 
+and `str_locate()` from `stringr`.
 
 The easiest way to demonstrate these is through an example.
 

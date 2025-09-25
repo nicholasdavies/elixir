@@ -47,7 +47,7 @@ expr_apply = function(x, f, depth = Inf, into = FALSE, order = c("pre", "post"),
 {
     # Parse x, although this use case seems unlikely
     x = do.call(do_parse_simple, list(substitute(x), env));
-    if (is(x, "expr_wrap")) {
+    if (inherits(x, "expr_wrap")) {
         x = x[[1]];
     }
 

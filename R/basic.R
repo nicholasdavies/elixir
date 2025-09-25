@@ -109,7 +109,7 @@ index_replace = function(xl, i, value, cl)
 
     nreplace = length(into[i]);
 
-    if (is(value, "expr_list")) {
+    if (inherits(value, "expr_list")) {
         l[i] = rep_len_warn(value, nreplace);
         into[i] = rep_len(attr(value, "into"), nreplace);
     } else if (is.list(value)) {
@@ -150,7 +150,7 @@ print.expr_list = function(x, ...)
             if (n != "") {
                 n = paste0(n, " = ")
             }
-            if (is(y, "expr_alt")) {
+            if (inherits(y, "expr_alt")) {
                 return (paste0(n, paste0(mapply(fmt_expr, y, attr(y, "into")), collapse = " ? ")))
             } else {
                 return (paste0(n, fmt_expr(y, i)))
@@ -227,7 +227,7 @@ print.expr_list = function(x, ...)
 expr_sub = function(expr, idx, env = parent.frame())
 {
     expr = do.call(do_parse_simple, list(substitute(expr), env))
-    if (is(expr, "expr_wrap")) {
+    if (inherits(expr, "expr_wrap")) {
         expr = expr[[1]]
     }
 
@@ -243,7 +243,7 @@ expr_sub = function(expr, idx, env = parent.frame())
 `expr_sub<-` = function(expr, idx, env = parent.frame(), value)
 {
     expr = do.call(do_parse_simple, list(substitute(expr), env))
-    if (is(expr, "expr_wrap")) {
+    if (inherits(expr, "expr_wrap")) {
         expr = expr[[1]]
     }
 
@@ -346,13 +346,13 @@ do_parse = function(expr, env = parent.frame())
 
     # Process the list
     for (i in seq_along(result)) {
-        if (is(result[[i]], "expr_alt")) {
+        if (inherits(result[[i]], "expr_alt")) {
             for (j in seq_along(result[[i]])) {
                 result[[i]][j] = list(debrace(result[[i]][[j]], to_eval[[i]][[j]], env))
             }
         } else {
             result[i] = list(debrace(result[[i]], to_eval[[i]], env))
-            if (is(result[[i]], "expr_list")) {
+            if (inherits(result[[i]], "expr_list")) {
                 # Already expr_list
                 return (result[[i]])
             } else if (is.list(result[[i]])) {

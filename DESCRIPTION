@@ -15,7 +15,6 @@ BugReports: https://github.com/nicholasdavies/elixir/issues
 License: MIT + file LICENSE
 Encoding: UTF-8
 Imports: 
- methods,
  rlang,
  stringr,
  glue

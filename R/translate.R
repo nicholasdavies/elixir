@@ -97,7 +97,7 @@ translate = function(expr, rules, env = parent.frame())
     result = lapply(expr, function(x) translate_sub(x, rules)[[1]]);
 
     # Return result
-    if (is(expr, "expr_wrap")) {
+    if (inherits(expr, "expr_wrap")) {
         return (result[[1]])
     } else {
         return (result)

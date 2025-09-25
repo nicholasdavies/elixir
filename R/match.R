@@ -223,7 +223,7 @@ expr_match = function(expr, pattern, n = Inf, dotnames = FALSE, env = parent.fra
         stop("expr_match requires one pattern.")
     }
 
-    if (is(pattern[[1]], "expr_alt")) {
+    if (inherits(pattern[[1]], "expr_alt")) {
         into = attr(pattern[[1]], "into")
     } else {
         into = attr(pattern, "into")
@@ -231,7 +231,7 @@ expr_match = function(expr, pattern, n = Inf, dotnames = FALSE, env = parent.fra
 
     # Do matching
     result = lapply(seq_along(expr), function(i) {
-        loc_start = if (is(expr, "expr_wrap")) NULL else i
+        loc_start = if (inherits(expr, "expr_wrap")) NULL else i
         match = match_sub(expr[[i]], pattern[[1]], n, into, dotnames = dotnames, loc_start, NULL, env);
         if (!is.null(match)) {
             return (structure(lapply(match, function(m) m[!names(m) %like% "^_"]), class = "expr_match"))
@@ -240,7 +240,7 @@ expr_match = function(expr, pattern, n = Inf, dotnames = FALSE, env = parent.fra
     });
 
     # Return result
-    if (is(expr, "expr_wrap")) {
+    if (inherits(expr, "expr_wrap")) {
         return (result[[1]])
     } else {
         return (result)
@@ -375,7 +375,7 @@ match_sub = function(expr, pattern, n, into, dotnames, loc, parent_match, env)
     match = NULL;
 
     # Do matching
-    if (is(pattern, "expr_alt")) {
+    if (inherits(pattern, "expr_alt")) {
         # Alternative expressions: try each, get first matching one.
         for (p in seq_along(pattern)) {
             # Skip alternatives marked as not for matching (see 2. below)
@@ -402,7 +402,7 @@ match_sub = function(expr, pattern, n, into, dotnames, loc, parent_match, env)
 
     # 2. Now attempt to match to subcomponents of expr -- i.e. if still looking
     # for matches, and can go into expression, then do so
-    if (is(pattern, "expr_alt")) {
+    if (inherits(pattern, "expr_alt")) {
         # For those alternatives which we should not use for recursion, set
         # "into" to NA to mark that alternative as something we should not try
         # to match to.
