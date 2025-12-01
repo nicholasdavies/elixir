@@ -20,8 +20,8 @@
 #' while replacing part of an `expr_list` with an expression or a "plain" list
 #' of expressions retains the existing anchoring information.
 #'
-#' @param ... Expressions to include in the list. If the arguments are named,
-#' these will be passed on to the returned list.
+#' @param ... [Expressions][elixir-expression] to include in the list. If the
+#' arguments are named, these will be passed on to the returned list.
 #' @param env Environment for injections in `...` (see
 #' [expression][elixir-expression]).
 #' @param xl An `expr_list`.
@@ -207,7 +207,7 @@ print.expr_list = function(x, ...)
 #'
 #' @param expr The expression to select from. Can also be a list of
 #'     expressions, in which case the first element of `index` selects the
-#'     expression from the list.
+#'     expression from the list. Can also be a formula.
 #' @param idx A valid index: `NULL` or an integer vector.
 #' @param env Environment for any injections in `expr` (see
 #' [expression][elixir-expression]).
@@ -269,8 +269,14 @@ do_parse_simple = function(expr, env = parent.frame())
     }
 
     # Check for mistakes in specifying -- tilde or question mark
-    if (length(lx) > 1 && (identical(lx[[1]], quote(`~`)) || identical(lx[[1]], quote(`?`)))) {
-        stop("Do not use anchor operator (~) or alternatives operator (?) in first argument.", call. = FALSE)
+    if (length(lx) > 1) {
+        if (length(lx) == 2 && identical(lx[[1]], quote(`~`)) && length(lx[[2]]) > 1 && identical(lx[[2]][[1]], quote(`{`))) {
+            stop("Do not use anchor operator (~) in first argument.", call. = FALSE)
+        }
+
+        if (length(lx) > 0 && identical(lx[[1]], quote(`?`))) {
+            stop("Do not use alternatives operator (?) in first argument.", call. = FALSE)
+        }
     }
 
     # Convert env to an environment if it is a list
@@ -414,6 +420,13 @@ debrace = function(x, ev, env)
     }
 }
 
+# Returns TRUE if x is an expression (rlang::expression()) or a formula, i.e.
+# tests whether x is suitable as the 1st expr argument to the expr_ functions.
+is_expr1 = function(x)
+{
+    rlang::is_expression(x) || rlang::is_formula(x, scoped = TRUE)
+}
+
 #' Expressions in `elixir`
 #'
 #' @description `elixir` is primarily a package for working with what it calls
@@ -421,7 +434,9 @@ debrace = function(x, ev, env)
 #' [rlang::is_expression()] returns `TRUE`. This includes calls, like the
 #' results of evaluating `quote(f(x))` or `quote(a:b)`, symbols like
 #' `quote(z)`, and syntactic literals like `2.5`, `"hello"`, `NULL`, `FALSE`,
-#' and so on.
+#' and so on. In many cases, you can also use `elixir` to work with
+#' [formulas][base::tilde], even though [rlang::is_expression()] returns
+#' `FALSE` for formulas.
 #'
 #' This is not to be confused with the built-in type [base::expression], which
 #' is essentially a special way of storing a vector of multiple "expressions".

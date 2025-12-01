@@ -197,8 +197,8 @@ translate_sub = function(x, rules)
 #' @export
 lang2str = function(x)
 {
-    if (!rlang::is_expression(x)) {
-        stop("lang2str only works with expressions.")
+    if (!is_expr1(x)) {
+        stop("lang2str only works with expressions and formulae.")
     }
     paste0(deparse(x, width.cutoff = 500), collapse = "")
 }

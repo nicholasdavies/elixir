@@ -158,6 +158,10 @@ test_that("expr_sub works", {
     expect_identical(expr_sub(expr, c(1,2)), quote(1 + 2 + 3))
     expect_identical(expr_sub(expr, c(1,2,2)), quote(1 + 2))
     expect_identical(expr_sub(quote(1 + 2 + 3 + 4), c(2,2,2)), 1)
+
+    formula = y ~ x + 1 + (2 + (a * b))
+    expr_sub(formula, c(3, 3, 2, 3, 2, 3)) <- quote(bee)
+    expect_identical(formula, y ~ x + 1 + (2 + (a * bee)))
 })
 
 test_that("errors are caught", {

@@ -70,19 +70,15 @@ test_that("expr_match works at top level", {
     expect_identical(expr_match( { 2 }, ~{ `.A:integer|A > 1` } ), NULL)
     expect_identical(expr_match( { 2 }, ~{ `.A:integer|A > 2` } ), NULL)
     expect_identical(expr_match( { "hi" }, ~{ `.A:character|A == "hi"` } ), M1("hi", A = "hi"))
-
-    # Limit number of matches
-    expect_identical(expr_match({ a + b + c }, { .A }, n = 1),
-        structure(list(list(match = quote(`+`), loc = 1L, A = quote(`+`))), class = "expr_match"))
-    expect_identical(expr_match({ a + b + c }, { .A }, n = 0), NULL)
-
-    # Behaviour of matching when arguments are named
-    expect_identical(expr_match({ f(a = 1) }, {f(.A)}), NULL)
-    expect_identical(expr_match({ f(a = 1) }, {f(..A)}), NULL)
-    expect_identical(expr_match({ f(a = 1) }, {f(...A)}), M1(f(a = 1), A = list(a = 1)))
 })
 
 test_that("expr_match works into and alternatively", {
+    M1 = function(match, ...) {
+        structure(list(
+            c(list(match = substitute(match), loc = NULL), list(...))
+        ), class = "expr_match")
+    }
+
     # Picking up all relevant tokens
     expect_identical(expr_match({ E = m * c^2 }, { `.A:name/[[:alpha:]]` }),
         structure(list(list(match = quote(E), loc = 2L, A = quote(E)),
@@ -114,6 +110,22 @@ test_that("expr_match works into and alternatively", {
         structure(list(list(alt = 2L, match = quote(`+`), loc = 1L), list(alt = 1L, match = quote(`*`), loc = c(3L, 1L))), class = "expr_match"))
     expect_identical(expr_match({ 1 + 2 * 3 }, { `+` } ? { `/` } ? ~{ `*` }),
         structure(list(list(alt = 1L, match = quote(`+`), loc = 1L)), class = "expr_match"))
+
+    # Limit number of matches
+    expect_identical(expr_match({ a + b + c }, { .A }, n = 1),
+        structure(list(list(match = quote(`+`), loc = 1L, A = quote(`+`))), class = "expr_match"))
+    expect_identical(expr_match({ a + b + c }, { .A }, n = 0), NULL)
+
+    # Behaviour of matching when arguments are named
+    expect_identical(expr_match({ f(a = 1) }, {f(.A)}), NULL)
+    expect_identical(expr_match({ f(a = 1) }, {f(..A)}), NULL)
+    expect_identical(expr_match({ f(a = 1) }, {f(...A)}), M1(f(a = 1), A = list(a = 1)))
+
+    # Matching in a formula
+    expect_identical(expr_match(list(~z, y ~ s(t)*x + b), {.F(...A)*.B}),
+        list(NULL, structure(list(list(match = quote(s(t) * x), loc = c(2L, 3L, 2L),
+            F = quote(s), A = list(quote(t)), B = quote(x))), class = "expr_match"))
+    )
 
     # Printing of match
     expect_output(elixir:::print.expr_match(expr_match({ 1 + 2 * 3 }, { `/` })), "NULL")

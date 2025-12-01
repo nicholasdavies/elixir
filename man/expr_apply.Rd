@@ -15,8 +15,9 @@ expr_apply(
 )
 }
 \arguments{
-\item{x}{The R object; can an \link[=elixir-expression]{expression}, or a list of
-arbitrary nestedness potentially containing \link[=elixir-expression]{expression}s.}
+\item{x}{The R object; can be an \link[=elixir-expression]{expression}, a
+\link[base:tilde]{formula}, or a list of arbitrary nestedness potentially
+containing multiple expressions or formulas.}
 
 \item{f}{Function to apply to all expressions within \code{x}; takes 1 to 3
 arguments.}
@@ -45,8 +46,8 @@ applied to expressions within it. If \code{how = "unlist"}, the same but with
 }
 \description{
 Recursively apply a function over an \link[=elixir-expression]{expression}, or any
-\link[=elixir-expression]{expression} elements of a list, and optionally the
-subexpressions within any expressions.
+expression elements of a list, and optionally the subexpressions within any
+expressions.
 }
 \details{
 The function \code{f} can take one to three arguments. The first argument is the

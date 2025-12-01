@@ -1,8 +1,8 @@
 #' Apply a function over expressions
 #'
 #' Recursively apply a function over an [expression][elixir-expression], or any
-#' [expression][elixir-expression] elements of a list, and optionally the
-#' subexpressions within any expressions.
+#' expression elements of a list, and optionally the subexpressions within any
+#' expressions.
 #'
 #' The function `f` can take one to three arguments. The first argument is the
 #' expression itself for `f` to apply to, and `f` should return some kind of
@@ -20,8 +20,9 @@
 #' The third argument is an integer vector, the index into `x` where
 #' `f` is currently operating. This is suitable for use with [expr_sub()].
 #'
-#' @param x The R object; can an [expression][elixir-expression], or a list of
-#' arbitrary nestedness potentially containing [expression][elixir-expression]s.
+#' @param x The R object; can be an [expression][elixir-expression], a
+#' [formula][base::tilde], or a list of arbitrary nestedness potentially
+#' containing multiple expressions or formulas.
 #' @param f Function to apply to all expressions within `x`; takes 1 to 3
 #' arguments.
 #' @param depth How many levels to recurse into lists; default is `Inf`.
@@ -99,7 +100,7 @@ apply_sub = function(x, f, depth, into, order, name, idx)
             # `[<-.expr_alt`.
             x[i] = list(apply_sub(x[[i]], f, depth - 1, into, order, c(list(nm), name), c(idx, i)));
         }
-    } else if (rlang::is_expression(x)) {
+    } else if (is_expr1(x)) {
         # For expressiony x, apply f, perhaps to all expression parts
         # Note that rlang::is_expression(x) is TRUE for syntactic literals too
         x = apply_sub_expr(x, f, into, order, name, idx);

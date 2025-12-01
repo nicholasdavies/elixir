@@ -9,7 +9,9 @@
 \code{\link[rlang:is_expression]{rlang::is_expression()}} returns \code{TRUE}. This includes calls, like the
 results of evaluating \code{quote(f(x))} or \code{quote(a:b)}, symbols like
 \code{quote(z)}, and syntactic literals like \code{2.5}, \code{"hello"}, \code{NULL}, \code{FALSE},
-and so on.
+and so on. In many cases, you can also use \code{elixir} to work with
+\link[base:tilde]{formulas}, even though \code{\link[rlang:is_expression]{rlang::is_expression()}} returns
+\code{FALSE} for formulas.
 
 This is not to be confused with the built-in type \link[base:expression]{base::expression}, which
 is essentially a special way of storing a vector of multiple "expressions".

@@ -9,7 +9,8 @@
 #' expr_replace(expr, ..., patterns, replacements,
 #'     n = Inf, env = parent.frame())
 #' @param expr Input. An [expression][elixir-expression], [expr_list], or
-#'     [list()] of expressions.
+#'     [list()] of expressions. Also works with [formulas][base::tilde] or
+#'     lists of formulas.
 #' @param ... Alternating series of patterns and replacements, each a single
 #'     [expression][elixir-expression] (though alternatives can be specified
 #'     with `?`).

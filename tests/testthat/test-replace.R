@@ -22,6 +22,15 @@ test_that("expr_replace works", {
         patterns = expr_list({a}), replacements = expr_list({b}, {y}), n = 1))
     expect_error(expr_replace(exprs, {a}, {b} ? {y}))
 
+    # Formulas
+    expect_identical(expr_replace(~a,        ~{ a }, { b }, n = 1), ~a)
+    expect_identical(expr_replace(~a,         { a }, { b }, n = 1), ~b)
+    expect_identical(expr_replace(y ~ a + x, ~{ a }, { b }, n = 1), y ~ a + x)
+    expect_identical(expr_replace(y ~ a + x,  { a }, { b }, n = 1), y ~ b + x)
+    expect_identical(expr_replace(y ~ a + x, ~{ .X + .Y }, { b }, n = 1), y ~ a + x)
+    expect_identical(expr_replace(y ~ a + x,  { .X + .Y }, { b }, n = 1), y ~ b)
+    expect_identical(expr_replace(list(~a, ~z), { a }, { b }, n = 1), list(~b, ~z))
+
     # References to temporary match entries
     expect_identical(expr_replace({ E = m * c^2 },
         { ._^2 }, { ._^3 },

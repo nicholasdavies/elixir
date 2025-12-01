@@ -9,7 +9,8 @@ expr_replace(expr, ..., patterns, replacements,
 }
 \arguments{
 \item{expr}{Input. An \link[=elixir-expression]{expression}, \link{expr_list}, or
-\code{\link[=list]{list()}} of expressions.}
+\code{\link[=list]{list()}} of expressions. Also works with \link[base:tilde]{formulas} or
+lists of formulas.}
 
 \item{...}{Alternating series of patterns and replacements, each a single
 \link[=elixir-expression]{expression} (though alternatives can be specified

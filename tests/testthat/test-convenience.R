@@ -24,7 +24,14 @@ test_that("match convenience wrappers work", {
         list(c(3L, 2L)))
 })
 
-test_that("match convenience wrappers work (multiple exprs)", {
+test_that("match convenience wrappers work with formulas", {
+    expect_identical(expr_count(y ~ a*x + b, { .A * .B }), 1L)
+    expect_identical(expr_detect(y ~ a*x + b, { .A * .B }), TRUE)
+    expect_identical(expr_extract(y ~ a*x + b, { .A * .B }), list(quote(a * x)))
+    expect_identical(expr_locate(y ~ a*x + b, { .A * .B }), list(c(3L, 2L)))
+})
+
+test_that("match convenience wrappers work with multiple exprs", {
     exprs = expr_list(
         { y = a*x^2 + b*x + c },
         { c^2 = a^2 + b^2 },

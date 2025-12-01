@@ -20,7 +20,8 @@ expr_locate(expr, pattern, n = Inf, gather = FALSE,
 }
 \arguments{
 \item{expr}{Input. An \link[=elixir-expression]{expression}, \link{expr_list}, or
-\code{\link[=list]{list()}} of expressions.}
+\code{\link[=list]{list()}} of expressions. Also works with \link[base:tilde]{formulas} or lists
+of formulas.}
 
 \item{pattern}{Pattern to look for. An \link[=elixir-expression]{expression}, a
 length-one \link{expr_list}, or a length-one \link{list} of expressions. The
@@ -59,7 +60,8 @@ For return values of \code{expr_count}, \code{expr_detect}, \code{expr_extract},
 \code{expr_locate}, see below.
 }
 \description{
-Match and extract patterns in an \link[=elixir-expression]{expression} or a list of expressions.
+Match and extract patterns in an \link[=elixir-expression]{expression} or a list
+of expressions.
 }
 \section{Details}{
 All of these functions are used to check whether an

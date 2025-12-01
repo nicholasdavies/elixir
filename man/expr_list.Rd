@@ -13,8 +13,8 @@ expr_list(..., env = parent.frame())
 \method{[}{expr_list}(xl, i) <- value
 }
 \arguments{
-\item{...}{Expressions to include in the list. If the arguments are named,
-these will be passed on to the returned list.}
+\item{...}{\link[=elixir-expression]{Expressions} to include in the list. If the
+arguments are named, these will be passed on to the returned list.}
 
 \item{env}{Environment for injections in \code{...} (see
 \link[=elixir-expression]{expression}).}

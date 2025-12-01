@@ -1,6 +1,7 @@
 #' Find patterns in expressions
 #'
-#' Match and extract patterns in an [expression][elixir-expression] or a list of expressions.
+#' Match and extract patterns in an [expression][elixir-expression] or a list
+#' of expressions.
 #'
 #' @usage
 #' expr_match(expr, pattern, n = Inf,
@@ -13,7 +14,8 @@
 #' expr_locate(expr, pattern, n = Inf, gather = FALSE,
 #'     env = parent.frame())
 #' @param expr Input. An [expression][elixir-expression], [expr_list], or
-#' [list()] of expressions.
+#'     [list()] of expressions. Also works with [formulas][base::tilde] or lists
+#'     of formulas.
 #' @param pattern Pattern to look for. An [expression][elixir-expression], a
 #'     length-one [expr_list], or a length-one [list] of expressions. The
 #'     question mark syntax (see [expression][elixir-expression]) can be used
