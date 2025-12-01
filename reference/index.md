@@ -1,0 +1,50 @@
+# Package index
+
+## All functions
+
+- [`elixir-expression`](https://nicholasdavies.github.io/elixir/reference/elixir-expression.md)
+  :
+
+  Expressions in `elixir`
+
+- [`elixir-rules`](https://nicholasdavies.github.io/elixir/reference/elixir-rules.md)
+  : Rules for understanding languages
+
+- [`elixir`](https://nicholasdavies.github.io/elixir/reference/elixir.md)
+  :
+
+  `elixir`: Transmutation of languages
+
+- [`expr_apply()`](https://nicholasdavies.github.io/elixir/reference/expr_apply.md)
+  : Apply a function over expressions
+
+- [`expr_list()`](https://nicholasdavies.github.io/elixir/reference/expr_list.md)
+  [`` `[`( ``*`<expr_list>`*`)`](https://nicholasdavies.github.io/elixir/reference/expr_list.md)
+  [`` `[<-`( ``*`<expr_list>`*`)`](https://nicholasdavies.github.io/elixir/reference/expr_list.md)
+  : Make a list of expressions
+
+- [`expr_match()`](https://nicholasdavies.github.io/elixir/reference/expr_match.md)
+  [`expr_count()`](https://nicholasdavies.github.io/elixir/reference/expr_match.md)
+  [`expr_detect()`](https://nicholasdavies.github.io/elixir/reference/expr_match.md)
+  [`expr_extract()`](https://nicholasdavies.github.io/elixir/reference/expr_match.md)
+  [`expr_locate()`](https://nicholasdavies.github.io/elixir/reference/expr_match.md)
+  : Find patterns in expressions
+
+- [`expr_replace()`](https://nicholasdavies.github.io/elixir/reference/expr_replace.md)
+  : Replace patterns within expressions
+
+- [`expr_sub()`](https://nicholasdavies.github.io/elixir/reference/expr_sub.md)
+  [`` `expr_sub<-`() ``](https://nicholasdavies.github.io/elixir/reference/expr_sub.md)
+  : Get or set a subexpression
+
+- [`lang2str()`](https://nicholasdavies.github.io/elixir/reference/lang2str.md)
+  : Convert an expression into a string
+
+- [`meld()`](https://nicholasdavies.github.io/elixir/reference/meld.md)
+  : Code generation from template file
+
+- [`reindent()`](https://nicholasdavies.github.io/elixir/reference/reindent.md)
+  : Reindent some lines of code
+
+- [`translate()`](https://nicholasdavies.github.io/elixir/reference/translate.md)
+  : Translate an R expression
