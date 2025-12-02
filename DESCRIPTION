@@ -1,7 +1,7 @@
 Package: elixir
 Type: Package
 Title: Transmutation of Languages
-Version: 0.1.1
+Version: 0.1.1.9000
 Authors@R: person("Nicholas", "Davies", email = "nicholas.davies@lshtm.ac.uk", role = c("cre", "aut", "cph"), comment = c(ORCID = "0000-0002-1740-1412"))
 Description: Tools for transforming 'R' expressions. Provides functions for 
  finding, extracting, and replacing patterns in 'R' language objects, similarly 
