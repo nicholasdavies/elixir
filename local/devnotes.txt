@@ -1,66 +1,8 @@
 TODO
 
-Converting elixir to work with formulae.
+Next step:
 
-> expr_apply(
->   x,
->   f,
->   depth = Inf,
->   into = FALSE,
->   order = c("pre", "post"),
->   how = c("replace", "unlist", "unique"),
->   env = parent.frame()
-> )
-
-First arg is the R object; can be an expression, or a list of
-arbitrary nestedness potentially containing expressions.
-This could be expanded to include formulae. !!CHANGE
-[x] edit
-[x] test
-[x] docs
-
-> expr_match(expr, pattern, n = Inf,
->     dotnames = FALSE, env = parent.frame())
-> expr_count(expr, pattern, n = Inf, env = parent.frame())
-> expr_detect(expr, pattern, n = Inf, env = parent.frame())
-> expr_extract(expr, pattern, what = "match", n = Inf,
->     dotnames = FALSE, gather = FALSE, env = parent.frame())
-> expr_locate(expr, pattern, n = Inf, gather = FALSE,
->     env = parent.frame())
-Yes, expr can be a formula or expression !! CHANGE
-pattern: could only be an expression.
-[x] edit
-[x] test
-[x] docs
-
-> expr_replace(expr, ..., patterns, replacements,
->     n = Inf, env = parent.frame())
-Yes, expr could be a formula !! CHANGE
-[x] edit
-[x] test
-[x] docs
-
-
-> expr_list(..., env = parent.frame())
-I think leave it.
-
-> expr_sub(expr, idx, env = parent.frame())
-> expr_sub(expr, idx, env = parent.frame()) <- value
-
-Yes !! CHANGE
-[x] edit
-[x] test
-[x] docs
-
-> lang2str(x)
-Yes !! CHANGE
-[x] edit
-[x] test
-[x] docs
-
-
-[x] Change docs for 'expression' as well
-Check all docs
+Make expr_replace work with function replacements as well, expr_apply style.
 
 X   Make sure NA into doesn't conflict with other into = NA stuff
 -   Rename expr_translate to something else?
