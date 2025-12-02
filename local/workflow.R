@@ -48,6 +48,7 @@ devtools::install(build_vignettes = TRUE)
 
 
 # RELEASE CYCLE
+# update cran comments
 devtools::check(remote = TRUE, manual = TRUE)
 devtools::check_win_devel()
 
