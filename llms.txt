@@ -1,14 +1,14 @@
 # `elixir`: Transmutation of Languages
 
-Tools for transforming `R` expressions.
+Tools for transforming R expressions.
 
-Provides functions for finding, extracting, and replacing patterns in
-‘R’ language objects, similarly to how regular expressions can be used
-to find, extract, and replace patterns in text. Also provides functions
-for generating code using specially-formatted template files and for
-translating ‘R’ expressions into similar expressions in other
-programming languages. The package may be helpful for advanced uses of
-‘R’ expressions, such as developing domain-specific languages.
+Provides functions for finding, extracting, and replacing patterns in R’
+language objects, similarly to how regular expressions can be used to
+find, extract, and replace patterns in text. Also provides functions for
+generating code using specially-formatted template files and for
+translating R expressions into similar expressions in other programming
+languages. The package may be helpful for advanced uses of R
+expressions, such as developing domain-specific languages.
 
 ## Installation
 
