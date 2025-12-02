@@ -3,7 +3,7 @@ pkgdown: 2.2.0
 pkgdown_sha: ~
 articles:
   elixir: elixir.html
-last_built: 2025-12-01T23:42Z
+last_built: 2025-12-02T14:10Z
 urls:
   reference: https://nicholasdavies.github.io/elixir/reference
   article: https://nicholasdavies.github.io/elixir/articles

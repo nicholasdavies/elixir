@@ -11,12 +11,12 @@ Source:
 [`DESCRIPTION`](https://github.com/nicholasdavies/elixir/blob/main/DESCRIPTION)
 
 Davies N (2025). *elixir: Transmutation of Languages*. R package version
-0.1.0.9000, <https://github.com/nicholasdavies/elixir>.
+0.1.1, <https://github.com/nicholasdavies/elixir>.
 
     @Manual{,
       title = {elixir: Transmutation of Languages},
       author = {Nicholas Davies},
       year = {2025},
-      note = {R package version 0.1.0.9000},
+      note = {R package version 0.1.1},
       url = {https://github.com/nicholasdavies/elixir},
     }
