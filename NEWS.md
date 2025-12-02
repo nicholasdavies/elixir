@@ -1,4 +1,4 @@
-# elixir (development version)
+# elixir 0.1.1
 
 -   elixir now works with formulas.
 -   Removed dependencies on data.table and methods packages.
