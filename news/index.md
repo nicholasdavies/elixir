@@ -1,5 +1,7 @@
 # Changelog
 
+## elixir (development version)
+
 ## elixir 0.1.1
 
 CRAN release: 2025-12-02
