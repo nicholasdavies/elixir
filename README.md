@@ -8,7 +8,7 @@
 
 Tools for transforming R expressions. 
 
-Provides functions for finding, extracting, and replacing patterns in R'
+Provides functions for finding, extracting, and replacing patterns in R
 language objects, similarly to how regular expressions can be used to find, 
 extract, and replace patterns in text. Also provides functions for generating 
 code using specially-formatted template files and for translating R 
