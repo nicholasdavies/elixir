@@ -9,6 +9,16 @@ test_that("expr_replace works", {
     expect_identical(expr_replace({ a + x }, ~{ .X + .Y }, { b }, n = 1), quote(b))
     expect_identical(expr_replace({ a + x }, ~{ .X + .Y }, { .Y + 2*.X^.X }, n = 1), quote(x + 2*a^a))
 
+    # More complex expressions
+    expect_identical(expr_replace({ a + b + c }, { ..A + ..B }, { ..A - ..B }), quote(a - b - c))
+    expect_identical(expr_replace({ a * b * c }, { ..A * ..B }, { ..A %*% ..B }), quote(a %*% b %*% c))
+
+    expect_identical(expr_replace({ a + (b * c / d) - (e * (f * g) + h * ((((i * j) / k) - l * m) / o) * p) / q },
+        { ..A * ..B }, { ..A %*% ..B },
+        { ..A / ..B }, { ..A %/% ..B },
+        { ..A + ..B }, { ..A %+% ..B }),
+        quote(a %+% (b %*% c %/% d) - (`%+%`(e %*% (f %*% g), h %*% ((((i %*% j)%/%k) - l %*% m)%/%o) %*% p)) %/% q))
+
     # Replacing in an expr_list; replacing alternatives
     exprs = expr_list(quote(a + x), quote(a + y))
     expect_identical(expr_replace(exprs, {a}, {b}, {x}, {y}), expr_list({b + y}, {b + y}))

@@ -22,9 +22,17 @@
 #'     to specify alternatives.
 #' @param n Maximum number of matches to make in each expression; default is
 #'     `Inf`.
-#' @param dotnames Normally, patterns like `.A`, `..B`, `...C`, etc, are named
-#'     just `A`, `B`, `C`, etc., in the returned matches, without the dot(s)
-#'     before each name. With `dotnames = TRUE`, the dots are kept.
+#' @param dotnames (`expr_match` only) Normally, patterns like `.A`, `..B`,
+#'     `...C`, etc, are named just `A`, `B`, `C`, etc., in the returned matches,
+#'     without the dot(s) before each name. With `dotnames = TRUE`, the dots are
+#'     kept.
+#' @param subloc (`expr_match` only) Normally, components of the matches are
+#'     just given by their contents, e.g. `list(A = quote(dog), B = quote(cat))`.
+#'     With `subloc = TRUE`, `expr_match()` returns the positions of the
+#'     components as well in `locA`, `locB`, etc. With `dotnames = TRUE`, these
+#'     will be `loc.A`, `loc.B`, etc. When matching functions or function
+#'     arguments, the location of either will point to the function call (see
+#'     "Sublocations" section in details below).
 #' @param what (`expr_extract` only) Name of the pattern to extract (or
 #'     `"match"`, the default, to extract the entire match).
 #' @param gather (`expr_extract` and `expr_locate` only) Whether to only return
@@ -208,6 +216,42 @@
 #' Finally, `expr_locate` is similar to `expr_extract` but it returns the
 #' location within `expr` of each successful match.
 #'
+#' # Sublocations
+#'
+#' When called with `subloc = TRUE`, [expr_match()] will return the location
+#' of each "wildcard" component of the corresponding pattern. For example:
+#'
+#' ```
+#' > expr_match({ a + b }, { .A + .B }, subloc = TRUE)
+#' expr_match: list(
+#'   list(match = quote(a + b), loc = NULL, A = quote(a), locA = 2L, B = quote(b), locB = 3L)
+#' )
+#' ```
+#'
+#' When matching a function's arguments with a ` `...` ` pattern such as
+#' `.F(...A)` or `myfunc(...A)`, the sub-location of the arguments (e.g. `...A`)
+#' will be given as the sub-location of the function call itself. That's because
+#' [expr_sub()] is designed to operate with indices that point to a single
+#' element within the expression, and `...A` can match multiple arguments or
+#' none, so there's no consistent way to "point" to just the arguments of a
+#' call. This might clarify:
+#'
+#' ```
+#' > expr_match({ f(a, b) }, { .F(...A) }, subloc = TRUE)
+#' expr_match: list(
+#'   list(match = quote(f(a, b)), loc = NULL, F = quote(f), A = list(quote(a), quote(b)), locF = NULL, locA = NULL)
+#' )
+#'
+#' > expr_match({ f() }, { .F(...A) }, subloc = TRUE)
+#' expr_match: list(
+#'   list(match = quote(f()), loc = NULL, F = quote(f), A = list(), locF = NULL, locA = NULL)
+#' )
+#' ```
+#'
+#' Above, there isn't a consistent way to give a "location" for function
+#' arguments matched by `...A` of which there may be zero, one, or more than
+#' one.
+#'
 #' @seealso [expr_replace()] to replace patterns in expressions.
 #' @order 1
 #' @examples
@@ -216,7 +260,8 @@
 #' # match to one of several alternatives
 #' expr_match({ 5 - 1 }, { .A + .B } ? { .A - .B })
 #' @export
-expr_match = function(expr, pattern, n = Inf, dotnames = FALSE, env = parent.frame())
+expr_match = function(expr, pattern, n = Inf, dotnames = FALSE,
+    subloc = FALSE, env = parent.frame())
 {
     # Parse arguments
     expr = do.call(do_parse_simple, list(substitute(expr), env));
@@ -234,7 +279,7 @@ expr_match = function(expr, pattern, n = Inf, dotnames = FALSE, env = parent.fra
     # Do matching
     result = lapply(seq_along(expr), function(i) {
         loc_start = if (inherits(expr, "expr_wrap")) NULL else i
-        match = match_sub(expr[[i]], pattern[[1]], n, into, dotnames = dotnames, loc_start, NULL, env);
+        match = match_sub(expr[[i]], pattern[[1]], n, into, dotnames = dotnames, subloc = subloc, loc_start, NULL, env);
         if (!is.null(match)) {
             return (structure(lapply(match, function(m) m[!names(m) %like% "^_"]), class = "expr_match"))
         }
@@ -284,13 +329,24 @@ token_match = function(obj, tm, parent_match, env)
     return (match);
 }
 
-build_match = function(match, loc, captures, capture_names)
+build_match = function(match, loc, captures, capture_names, subloc, sublocs)
 {
-    setNames(c(list(match, loc), captures), c("match", "loc", capture_names))
+    if (missing(captures)) { # Match to exact token
+        return (list(match = match, loc = loc))
+    } else { # Match to template
+        ret = setNames(c(list(match, loc), captures), c("match", "loc", capture_names))
+        if (subloc) {
+            if (!is.list(sublocs)) {
+                sublocs = list(sublocs)
+            }
+            ret = c(ret, setNames(sublocs, paste0("loc", capture_names)))
+        }
+        return (ret)
+    }
 }
 
 # Workhorse for expr_match
-match_sub = function(expr, pattern, n, into, dotnames, loc, parent_match, env)
+match_sub = function(expr, pattern, n, into, dotnames, subloc, loc, parent_match, env)
 {
     if (n <= 0) {
         return (NULL)
@@ -317,13 +373,15 @@ match_sub = function(expr, pattern, n, into, dotnames, loc, parent_match, env)
                         # Sought token match succeeds
                         match = build_match(expr, loc,
                             list(expr[[1]], as.list(expr[-1])),
-                            c(name(".", tm[, 2]), name("...", am[, 2])));
+                            c(name(".", tm[, 2]), name("...", am[, 2])),
+                            subloc, list(loc, loc));
                     }
                 } else if (pattern[[1]] == expr[[1]]) {
                     # Pattern's function name seeks exact match and succeeds
                     match = build_match(expr, loc,
                         list(as.list(expr[-1])),
-                        name("...", am[, 2]));
+                        name("...", am[, 2]),
+                        subloc, list(loc));
                 }
             }
         } else if (length(pattern) > 1) {
@@ -337,7 +395,7 @@ match_sub = function(expr, pattern, n, into, dotnames, loc, parent_match, env)
                         match2 = NULL;
                         break;
                     }
-                    m = match_sub(expr[[i]], pattern[[i]], 1, FALSE, dotnames, c(loc, i),
+                    m = match_sub(expr[[i]], pattern[[i]], 1, FALSE, dotnames, subloc, c(loc, i),
                         c(if (is.null(parent_match)) match1 else parent_match, match2), env);
                     if (is.null(m)) {
                         # no match for part i: match has failed
@@ -353,21 +411,22 @@ match_sub = function(expr, pattern, n, into, dotnames, loc, parent_match, env)
             }
         } else if (is.name(pattern) && !is.na((m <- stringr::str_match(as.character(pattern), xpat))[1, 1])) {
             # C. Pattern is ..A -- match any expression
-            match = build_match(expr, loc, list(expr), name("..", m[, 2]));
+            match = build_match(expr, loc, list(expr), name("..", m[, 2]), subloc, loc);
         } else if (is.name(pattern) && !is.na((tm <- stringr::str_match(as.character(pattern), tpat))[1, 1])) {
             # D. Pattern is .A -- match token, provided it is not named (this requires ...A)
             if (is.null(names(expr)) && (is.atomic(expr) || is.name(expr)) && token_match(expr, tm, parent_match, env)) {
-                match = build_match(expr, loc, list(expr), name(".", tm[, 2]));
+                match = build_match(expr, loc, list(expr), name(".", tm[, 2]), subloc, loc);
             }
         } else if (is.call(pattern) && !is.na((tm <- stringr::str_match(as.character(pattern), tpat))[1, 1])) {
             # E. Pattern is .A() -- match no-arg call
             if (is.call(expr) && token_match(expr, tm, parent_match, env)) {
-                match = build_match(expr, loc, list(expr[[1]]), name(".", tm[, 2]));
+                match = build_match(expr, loc, list(expr[[1]]), name(".", tm[, 2]), subloc, loc);
             }
         } else {
             # F. Any other single-token pattern (i.e. a literal)
             if (identical(pattern, expr)) {
-                match = list(match = expr, loc = loc);
+                # No subloc required here
+                match = build_match(expr, loc);
             }
         }
         return (match)
@@ -413,7 +472,7 @@ match_sub = function(expr, pattern, n, into, dotnames, loc, parent_match, env)
     }
     if (any(into, na.rm = TRUE) && is.call(expr)) {
         for (i in seq_along(expr)) {
-            m = match_sub(expr[[i]], pattern, n, into, dotnames, c(loc, i), NULL, env);
+            m = match_sub(expr[[i]], pattern, n, into, dotnames, subloc, c(loc, i), NULL, env);
             if (!is.null(m)) {
                 n = n - 1
                 match = c(match, m);

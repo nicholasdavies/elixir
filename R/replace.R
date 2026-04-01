@@ -60,7 +60,8 @@ expr_replace = function(expr, ..., patterns, replacements, n = Inf, env = parent
     # Do replacement
     result = lapply(expr, function(x) {
         for (j in seq_along(patterns)) {
-            matches = expr_match(x, patterns[j], n = n, dotnames = TRUE)
+            matches = expr_match(x, patterns[j], n = n, dotnames = TRUE, subloc = TRUE)
+            # Proceed backward through matches, to do deepest matches in parse tree first
             for (m in rev(seq_along(matches))) {
                 # If match: First get correct replacement for substitution
                 if (inherits(replacements[[j]], "expr_alt")) {
@@ -76,7 +77,7 @@ expr_replace = function(expr, ..., patterns, replacements, n = Inf, env = parent
                 for (k in seq_along(matches[[m]])) {
                     nm = names(matches[[m]])[k];
                     if (nm %like% "^\\.") {
-                        substitution = replace_name(substitution, as.name(nm), matches[[m]][[k]]);
+                        substitution = replace_name(substitution, as.name(nm), x[[matches[[m]][[paste0("loc", nm)]]]]);
                     }
                 }
                 x = `expr_sub<-`(x, matches[[m]]$loc, value = substitution)

@@ -31,9 +31,18 @@ to specify alternatives.}
 \item{n}{Maximum number of matches to make in each expression; default is
 \code{Inf}.}
 
-\item{dotnames}{Normally, patterns like \code{.A}, \code{..B}, \code{...C}, etc, are named
-just \code{A}, \code{B}, \code{C}, etc., in the returned matches, without the dot(s)
-before each name. With \code{dotnames = TRUE}, the dots are kept.}
+\item{dotnames}{(\code{expr_match} only) Normally, patterns like \code{.A}, \code{..B},
+\code{...C}, etc, are named just \code{A}, \code{B}, \code{C}, etc., in the returned matches,
+without the dot(s) before each name. With \code{dotnames = TRUE}, the dots are
+kept.}
+
+\item{subloc}{(\code{expr_match} only) Normally, components of the matches are
+just given by their contents, e.g. \code{list(A = quote(dog), B = quote(cat))}.
+With \code{subloc = TRUE}, return the positions of the components as well in
+\code{locA}, \code{locB}, etc. With \code{dotnames = TRUE}, these will be \code{loc.A},
+\code{loc.B}, etc. When matching functions or function arguments, the location
+of either will point to the function call (see "Sublocations" section in
+details below).}
 
 \item{env}{Environment for injections in \code{expr}, \code{pattern} (see
 \link[=elixir-expression]{expression}).}
@@ -225,6 +234,39 @@ in a single, unnested list; so the above call to \code{expr_extract} with
 
 Finally, \code{expr_locate} is similar to \code{expr_extract} but it returns the
 location within \code{expr} of each successful match.
+}
+
+\section{Sublocations}{
+When called with \code{subloc = TRUE}, \code{\link[=expr_match]{expr_match()}} will return the location
+of each "wildcard" component of the corresponding pattern. For example:
+
+\if{html}{\out{<div class="sourceCode">}}\preformatted{> expr_match(\{ a + b \}, \{ .A + .B \}, subloc = TRUE)
+expr_match: list(
+  list(match = quote(a + b), loc = NULL, A = quote(a), locA = 2L, B = quote(b), locB = 3L)
+)
+}\if{html}{\out{</div>}}
+
+When matching a function's arguments with a \code{...} pattern such as \code{.F(...A)}
+or \code{myfunc(...A)}, the sub-location of the arguments (e.g. \code{...A}) will be
+given as the sub-location of the function call itself. That's because
+\code{\link[=expr_sub]{expr_sub()}} is designed to operate with indices that point to a single
+element within the expression, and \code{...A} can match multiple arguments or
+none, so there's no consistent way to "point" to just the arguments of a
+call. This might clarify:
+
+\if{html}{\out{<div class="sourceCode">}}\preformatted{> expr_match(\{ f(a, b) \}, \{ .F(...A) \}, subloc = TRUE)
+expr_match: list(
+  list(match = quote(f(a)), loc = NULL, F = quote(f), A = list(quote(a), quote(b)), locF = NULL, locA = NULL)
+)
+
+> expr_match(\{ f() \}, \{ .F(...A) \}, subloc = TRUE)
+expr_match: list(
+  list(match = quote(f(a)), loc = NULL, F = quote(f), A = list(), locF = NULL, locA = NULL)
+)
+}\if{html}{\out{</div>}}
+
+Above, there isn't a consistent way to give a "location" for function
+arguments \code{...A} of which there may be zero, one, or more than one.
 }
 
 \examples{
