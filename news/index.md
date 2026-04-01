@@ -2,6 +2,10 @@
 
 ## elixir (development version)
 
+- Fixed a bug in expr_replace() that would sometimes not replace all
+  instances of a pattern.
+- Added parameter subloc to expr_match().
+
 ## elixir 0.1.1
 
 CRAN release: 2025-12-02
