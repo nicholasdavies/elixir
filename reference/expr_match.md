@@ -56,11 +56,11 @@ expr_locate(expr, pattern, n = Inf, gather = FALSE,
 
   (`expr_match` only) Normally, components of the matches are just given
   by their contents, e.g. `list(A = quote(dog), B = quote(cat))`. With
-  `subloc = TRUE`, return the positions of the components as well in
-  `locA`, `locB`, etc. With `dotnames = TRUE`, these will be `loc.A`,
-  `loc.B`, etc. When matching functions or function arguments, the
-  location of either will point to the function call (see "Sublocations"
-  section in details below).
+  `subloc = TRUE`, `expr_match()` returns the positions of the
+  components as well in `locA`, `locB`, etc. With `dotnames = TRUE`,
+  these will be `loc.A`, `loc.B`, etc. When matching functions or
+  function arguments, the location of either will point to the function
+  call (see "Sublocations" section in details below).
 
 - env:
 
@@ -266,7 +266,7 @@ example:
       list(match = quote(a + b), loc = NULL, A = quote(a), locA = 2L, B = quote(b), locB = 3L)
     )
 
-When matching a function's arguments with a `...` pattern such as
+When matching a function's arguments with a ` `...` ` pattern such as
 `.F(...A)` or `myfunc(...A)`, the sub-location of the arguments (e.g.
 `...A`) will be given as the sub-location of the function call itself.
 That's because
@@ -278,16 +278,17 @@ This might clarify:
 
     > expr_match({ f(a, b) }, { .F(...A) }, subloc = TRUE)
     expr_match: list(
-      list(match = quote(f(a)), loc = NULL, F = quote(f), A = list(quote(a), quote(b)), locF = NULL, locA = NULL)
+      list(match = quote(f(a, b)), loc = NULL, F = quote(f), A = list(quote(a), quote(b)), locF = NULL, locA = NULL)
     )
 
     > expr_match({ f() }, { .F(...A) }, subloc = TRUE)
     expr_match: list(
-      list(match = quote(f(a)), loc = NULL, F = quote(f), A = list(), locF = NULL, locA = NULL)
+      list(match = quote(f()), loc = NULL, F = quote(f), A = list(), locF = NULL, locA = NULL)
     )
 
 Above, there isn't a consistent way to give a "location" for function
-arguments `...A` of which there may be zero, one, or more than one.
+arguments matched by `...A` of which there may be zero, one, or more
+than one.
 
 ## See also
 
