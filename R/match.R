@@ -5,7 +5,7 @@
 #'
 #' @usage
 #' expr_match(expr, pattern, n = Inf,
-#'     dotnames = FALSE, env = parent.frame())
+#'     dotnames = FALSE, subloc = FALSE, env = parent.frame())
 #'
 #' expr_count(expr, pattern, n = Inf, env = parent.frame())
 #' expr_detect(expr, pattern, n = Inf, env = parent.frame())
