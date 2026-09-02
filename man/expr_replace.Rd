@@ -11,14 +11,17 @@ expr_replace(expr, ..., patterns, replacements,
 \item{expr}{Input. An \link[=elixir-expression]{expression}, \link{expr_list}, or
 \code{\link[=list]{list()}} of expressions.}
 
-\item{...}{Alternating series of patterns and replacements, each a single
-\link[=elixir-expression]{expression} (though alternatives can be specified
-with \verb{?}).}
+\item{...}{Alternating series of patterns and replacements. Each pattern
+should be a single \link[=elixir-expression]{expression} (though alternatives
+can be specified with \verb{?}). Each replacement should be either a single
+expression or a function (see \emph{Function replacements}).}
 
 \item{patterns}{Patterns to look for. An \link[=elixir-expression]{expression},
 \link{expr_list}, or \code{\link[=list]{list()}} of expressions.}
 
-\item{replacements}{Replacements, one for each pattern.}
+\item{replacements}{Replacements, one for each pattern. Each can be an
+\link[=elixir-expression]{expression} or a function (see \emph{Function
+replacements}).}
 
 \item{n}{Maximum number of times for each expression to make each
 replacement; default is \code{Inf}.}
@@ -36,6 +39,32 @@ or a list of expressions.
 \details{
 Patterns follow the syntax for \code{\link[=expr_match]{expr_match()}}.
 }
+\section{Function replacements}{
+Normally, each replacement is an expression template with capture names (like
+\code{.A} or \code{..B}) standing in for the matched parts, e.g. \code{{ .A + ..B }}. But
+if a replacement is a function, it is called for each match and the return
+value is used as the replacement, e.g.
+\code{function(m) substitute(A - B, m)}.
+
+The function takes a single argument: a named list containing the match
+details. This list has elements \code{match} (the matched expression), \code{loc} (its
+location), and all captures named without leading dots. For example, with the
+pattern \code{{ ..A ^ .N }} matching \code{x^2}, the function receives:
+
+\if{html}{\out{<div class="sourceCode">}}\preformatted{list(match = quote(x^2), loc = ..., A = quote(x), N = 2)
+}\if{html}{\out{</div>}}
+
+To build a new expression from captures, you can pass the list as the second
+argument to \code{\link[base:substitute]{base::substitute()}}. A full example:
+
+\if{html}{\out{<div class="sourceCode">}}\preformatted{expr_replace(\{ x^2 + y^2 + z^3 \}, \{ ..A ^ .N \},
+    function(m) \{
+        if (m$N == 2) substitute(square(A), m) else substitute(A ^ N, m)
+    \})
+# => square(x) + square(y) + z^3
+}\if{html}{\out{</div>}}
+}
+
 \examples{
 # Example with alternating patterns and replacements
 expr_replace({ 1 + 2 }, {1}, {one}, {2}, {two})
@@ -46,6 +75,12 @@ expr_replace({ 1 + 2 }, patterns = expr_list({1}, {2}),
 
 # Replace with captures
 expr_replace({ 1 + 2 }, ~{ .A + .B }, { .A - .B })
+
+# Function replacement with conditional logic
+expr_replace({ x^2 + y^2 + z^3 }, { ..A ^ .N },
+    function(m) {
+        if (m$N == 2) substitute(square(A), m) else substitute(A ^ N, m)
+    })
 }
 \seealso{
 \code{\link[=expr_match]{expr_match()}} to find patterns in expressions, and its cousins
