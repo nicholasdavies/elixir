@@ -16,6 +16,7 @@ You can install the released version of `elixir` from
 [CRAN](https://CRAN.R-project.org/package=elixir) with:
 
 ``` r
+
 install.packages("elixir")
 ```
 
@@ -23,6 +24,7 @@ You can install the development version of `elixir` from
 [GitHub](https://github.com/nicholasdavies/elixir) with:
 
 ``` r
+
 # install.packages("devtools")
 devtools::install_github("nicholasdavies/elixir")
 ```

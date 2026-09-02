@@ -1,6 +1,7 @@
 # Introduction to elixir
 
 ``` r
+
 library(elixir)
 ```
 
@@ -56,6 +57,7 @@ rate.
 One could implement this in R using the package `deSolve`:
 
 ``` r
+
 y <- c(x = 1, y = 1)
 times <- 0:100
 parms <- c(alpha = 1/6, beta = 1/3, gamma = 0.25, delta = 0.25) 
@@ -85,6 +87,7 @@ Let’s suppose that instead we want to start with a set of quoted
 statements like this:
 
 ``` r
+
 system <- quote({
     t_end = 100
 
@@ -110,6 +113,7 @@ from 0 to the specified `t_end` within `system`. We can look for a
 statement of the form `t_end = .X` like so:
 
 ``` r
+
 expr_match(system, { t_end = .X })
 #> expr_match: list(
 #>   list(match = quote(t_end = 100), loc = 2L, X = 100)
@@ -123,6 +127,7 @@ naming a parameter to `quote` or
 [`rlang::expr`](https://rlang.r-lib.org/reference/expr.html):
 
 ``` r
+
 # neither of these will work
 expr_match(system, quote(t_end = .X))
 expr_match(system, rlang::expr(t_end = .X))
@@ -140,6 +145,7 @@ We can extract the number `100` from this list returned by `expr_match`,
 but instead we will use a shortcut, `expr_extract`:
 
 ``` r
+
 expr_extract(system, { t_end = .X }, "X")
 #> [[1]]
 #> [1] 100
@@ -151,6 +157,7 @@ be a two-element `list`. We can tell `elixir` to stop after the first
 match:
 
 ``` r
+
 expr_extract(system, { t_end = .X }, "X", n = 1)
 #> [[1]]
 #> [1] 100
@@ -160,6 +167,7 @@ or use `expr_count` to make sure there is exactly one `t_end = .X`
 statement:
 
 ``` r
+
 if (expr_count(system, { t_end = .X }) != 1) {
     stop("Need exactly one specification of end time.")
 }
@@ -168,6 +176,7 @@ if (expr_count(system, { t_end = .X }) != 1) {
 and set `times` like so:
 
 ``` r
+
 times <- 0:expr_extract(system, { t_end = .X }, "X")[[1]]
 times
 #>   [1]   0   1   2   3   4   5   6   7   8   9  10  11  12  13  14  15  16  17
@@ -182,6 +191,7 @@ OK, that’s done. Now let’s extract the initial state vector. For this we
 want to look for patterns of the form `.X(0) = .V`:
 
 ``` r
+
 expr_match(system, { .X(0) = .V })
 #> expr_match: list(
 #>   list(match = quote(x(0) = 1), loc = 3L, X = quote(x), V = 1),
@@ -194,6 +204,7 @@ the names of the states (here “x” and “y”) and their initial values
 (both 1).
 
 ``` r
+
 expr_extract(system, { .X(0) = .V }, "X")
 #> [[1]]
 #> x
@@ -217,6 +228,7 @@ y
 Now for parameters, we might initially think to use:
 
 ``` r
+
 expr_match(system, { .P = .X })
 #> expr_match: list(
 #>   list(match = quote(t_end = 100), loc = 2L, P = quote(t_end), X = 100),
@@ -232,6 +244,7 @@ tokens, `/`, `1`, and `6`. So we’ll use `..X` instead of `.X` so that we
 can match any subexpression:
 
 ``` r
+
 expr_match(system, { .P = ..X })
 #> expr_match: list(
 #>   list(match = quote(t_end = 100), loc = 2L, P = quote(t_end), X = 100),
@@ -246,6 +259,7 @@ We can also filter out t_end by adding a “test” to the capture token
 `.P` like so:
 
 ``` r
+
 expr_match(system, { `.P|P != "t_end"` = ..X })
 #> expr_match: list(
 #>   list(match = quote(alpha = 1/6), loc = 7L, P = quote(alpha), X = quote(1/6)),
@@ -265,6 +279,7 @@ symbol.
 All together, we can get the parameters like so:
 
 ``` r
+
 parms <- expr_extract(system, { `.P|P != "t_end"` = ..X }, "X")
 parms <- sapply(parms, eval)
 names(parms) <- as.character(expr_extract(system, { `.P|P != "t_end"` = ..X }, "P"))
@@ -279,6 +294,7 @@ patterns `dX/dt = ...`; since the “dX” there is one symbol, we will
 check it to make sure it is a symbol that starts with a lowercase d:
 
 ``` r
+
 expr_match(system, { `.A:name|substr(A, 1, 1) == "d"`/dt = ..X })
 #> expr_match: list(
 #>   list(match = quote(dx/dt = alpha * x - beta * x * y), loc = 5L, A = quote(dx), X = quote(alpha * x - beta * x * y)),
@@ -292,6 +308,7 @@ Here, the `:name` checks that the the captured element `.A` is of class
 Let’s extract the statements:
 
 ``` r
+
 statements <- expr_extract(system, { `.A:name|substr(A, 1, 1) == "d"`/dt = ..X })
 statements
 #> [[1]]
@@ -305,6 +322,7 @@ We can now use `expr_replace` to change e.g. `dX/dt = ...` to
 `dX <- ...` so that it is a valid R assignment statement:
 
 ``` r
+
 R_statements <- expr_replace(statements,
     { `.A:name|substr(A, 1, 1) == "d"`/dt = ..X },
     { .A <- ..X })
@@ -320,6 +338,7 @@ Let’s also extract the names of the derivatives themselves, i.e. `dx`
 and `dy`:
 
 ``` r
+
 derivatives <- expr_replace(R_statements, { .D <- ..X }, { .D })
 derivatives
 #> [[1]]
@@ -333,6 +352,7 @@ Finally we put this all into a function using `rlang` and its injection
 operators:
 
 ``` r
+
 func <- eval(rlang::expr(
     function(t, y, parms)
     {
@@ -348,6 +368,7 @@ Putting it all together into a wrapper function, we get something like
 this:
 
 ``` r
+
 run_ode <- function(system)
 {
     # Get times
