@@ -37,7 +37,7 @@ rlang \link[rlang:injection-operator]{injection operator, !!} and
 \link[rlang:splice-operator]{splice operator, !!!}).
 
 With base R, if you want to store an expression such as \code{x + y} in a
-variable or pass it to a function, you need to use \code{\link[base:substitute]{base::quote()}} or
+variable or pass it to a function, you need to use \code{\link[base:quote]{base::quote()}} or
 \code{\link[rlang:expr]{rlang::expr()}}, but any Elixir \code{expr_} function will also accept an
 "expression literal" wrapped in braces, \code{{}}.
 

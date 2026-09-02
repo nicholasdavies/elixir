@@ -56,7 +56,7 @@ target language. Example: \code{"({x})"} is correct for virtually all
 programming languages.
 \item \code{symbol}: a function which takes a symbol and returns a character string,
 representing the name of that symbol in the target language. This
-could just be equal to \link[base:character]{base::as.character}, but it can be changed to
+could just be equal to \link[base:as.character]{base::as.character}, but it can be changed to
 something else in case you want name mangling, or e.g. some processing
 to replace \code{.} in symbols with some other character (as \code{.} are often
 not allowed as part of symbols in popular languages).

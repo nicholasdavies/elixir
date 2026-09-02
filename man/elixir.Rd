@@ -42,7 +42,7 @@ replacements, this may be useful.
 expression; the one advantage this has over \code{[[} is that it allows you to use
 \code{NULL} as the index, which gives back the whole expression.
 
-\code{\link[=lang2str]{lang2str()}} does the opposite of \code{\link[base:parse]{base::str2lang()}}; it is like
+\code{\link[=lang2str]{lang2str()}} does the opposite of \code{\link[base:str2lang]{base::str2lang()}}; it is like
 \code{deparse1()} which is new since R 4.0.0, but with \code{collapse = ""} instead of
 \code{collapse = " "}.
 

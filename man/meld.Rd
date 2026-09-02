@@ -72,10 +72,12 @@ There are some special sequences:
 \item \code{`$expr`}subs in \code{expr} only on the last line of a multi-line expansion
 \item \code{`!$expr`} subs in \code{expr} on all but the last line of a multi-line expansion
 \item \code{`#include <file>`} runs \code{file} through \code{meld} and pastes in the result
+\item \code{`#include "file"`} interprets \code{file} as an R expression resolving to
+a filename, runs that file through \code{meld}, and pastes in the result
 }
 
 The \verb{#include} command must appear by itself on a line, and searches for
-\code{file} in the path \code{ipath}.
+files in the path \code{ipath}.
 
 The function tries to guess \code{rules} from the file extension if that is
 possible. If the file extension is .c, then \code{"C"} is guessed; for .h, .hpp,
