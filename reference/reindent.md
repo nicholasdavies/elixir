@@ -80,9 +80,9 @@ in limited cases. In R, when using [raw character
 constants](https://rdrr.io/r/base/Quotes.html) you must use an uppercase
 `R`, the double quote symbol and zero to two hyphens. In C/C++, when
 using [raw string
-literals](https://en.cppreference.com/w/cpp/language/string_literal.html)
-you must use the prefix `R`, and zero to two hyphens as the delimiter
-char sequence (plus parentheses). In Lua, you can use [long
+literals](https://en.cppreference.com/cpp/language/string_literal) you
+must use the prefix `R`, and zero to two hyphens as the delimiter char
+sequence (plus parentheses). In Lua, you can use [long
 brackets](https://www.lua.org/manual/5.2/manual.html#3.1) with zero to
 two equals signs. Any other attempt to use raw strings will probably
 break `reindent()`.

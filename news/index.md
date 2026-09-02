@@ -2,7 +2,7 @@
 
 ## elixir (development version)
 
-- Extended expr_replace() to acept functions as replacements.
+- Extended expr_replace() to accept functions as replacements.
 - Fixed a bug in expr_replace() that would sometimes not replace all
   instances of a pattern.
 - Added parameter subloc to expr_match().
