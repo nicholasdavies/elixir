@@ -19,19 +19,6 @@ export(lang2str)
 export(meld)
 export(reindent)
 export(translate)
-importFrom(data.table,
-  "%like%",
-  ":=",
-  .BY,
-  .EACHI,
-  .GRP,
-  .I,
-  .N,
-  .NGRP,
-  .SD,
-  data.table
-)
-importFrom(methods,is)
 importFrom(stats,
   na.omit,
   setNames

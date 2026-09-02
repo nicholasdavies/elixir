@@ -17,6 +17,9 @@ test_that("reindent works", {
     "void Woof();",
     "private:",
     "std::string name;",
+    "/*",
+    "nothing here",
+    "*/",
     "};")
     expect_identical(reindent(Cpp_lines, "C++"), c(
     "class Dog",
@@ -25,6 +28,9 @@ test_that("reindent works", {
     "    void Woof();",
     "private:",
     "    std::string name;",
+    "    /*",
+    "nothing here",
+    "*/",
     "};"))
 
     Lua_lines = c(
@@ -72,4 +78,10 @@ test_that("reindent works", {
     '        return (rlang::inject(rlang::expr(!!x[[2]]), env))',
     '    }',
     '}'))
+
+    quote_test = c(
+    "string = '\"{\\'[\\\\'",
+    "return (string)"
+    )
+    expect_identical(reindent(quote_test, "R"), quote_test)
 })

@@ -17,6 +17,15 @@ However, the syntax for manipulating R language objects is a little
 tricky. Packages such as \code{rlang} help to make this task easier. \code{elixir}
 makes a few extra shortcuts available, and is geared for advanced R
 users.
+
+\code{elixir} provides functions for finding, extracting, and replacing patterns
+in 'R' language objects, similarly to how regular expressions can be used to
+find, extract, and replace patterns in text. It also provides functions for
+generating code using specially-formatted template files and for translating
+'R' expressions into similar expressions in other programming languages.
+
+The package may be helpful for advanced uses of 'R' expressions, such as
+developing domain-specific languages.
 }
 \section{Find and replace for language objects}{
 

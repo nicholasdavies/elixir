@@ -12,7 +12,7 @@ expr_sub(expr, idx, env = parent.frame()) <- value
 \arguments{
 \item{expr}{The expression to select from. Can also be a list of
 expressions, in which case the first element of \code{index} selects the
-expression from the list.}
+expression from the list. Can also be a formula.}
 
 \item{idx}{A valid index: \code{NULL} or an integer vector.}
 
@@ -22,7 +22,7 @@ expression from the list.}
 \item{value}{Replacement; an expression.}
 }
 \value{
-The subexpression, which can be modified.
+The element of the expression selected by \code{idx}.
 }
 \description{
 These functions allow you to extract and/or modify a subexpression within an
@@ -68,4 +68,3 @@ print(expr)
 \code{\link[=expr_match]{expr_match()}}, \code{\link[=expr_locate]{expr_locate()}} which return indices to
 subexpressions.
 }
-\keyword{internal}

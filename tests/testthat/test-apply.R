@@ -1,9 +1,10 @@
 test_that("expr_apply works", {
-    # expr_apply should work for expressions, lists, and expr_lists.
+    # expr_apply should work for expressions, lists, expr_lists, and formulae.
     # Works with all types for x:
     x1 = quote(y <- a*x + b)
     x2 = list(quote(a), quote(b + c), quote(d + e + f))
     x3 = expr_list({to + be} ? {!(to + be)}, { f(x) })
+    x4 = y ~ a*x + b
 
     expect_identical(expr_apply(x1, function(x) as.name(stringr::str_to_upper(as.character(x))), into = "leaves"),
         quote(Y <- A*X + B))
@@ -11,6 +12,8 @@ test_that("expr_apply works", {
         list(quote(A), quote(B + C), quote(D + E + F)))
     expect_identical(expr_apply(x3, function(x) as.name(stringr::str_to_upper(as.character(x))), into = "leaves"),
         expr_list({TO + BE} ? {!(TO + BE)}, { F(X) }))
+    expect_identical(expr_apply(x4, function(x) as.name(stringr::str_to_upper(as.character(x))), into = "leaves"),
+        Y ~ A*X + B)
 
     # Depth limiting works
     expect_identical(expr_apply(x1, function(x) as.name(stringr::str_to_upper(as.character(x))), depth = 0, into = "leaves"),
@@ -19,6 +22,8 @@ test_that("expr_apply works", {
         list(quote(a), quote(b + c), quote(d + e + f)))
     expect_identical(expr_apply(x3, function(x) as.name(stringr::str_to_upper(as.character(x))), depth = 1, into = "leaves"),
         expr_list({to + be} ? {!(to + be)}, { F(X) }))
+    expect_identical(expr_apply(x4, function(x) as.name(stringr::str_to_upper(as.character(x))), depth = 0, into = "leaves"),
+        Y ~ A*X + B)
 
     # Different modes of `into`, `order`.
     string = ""
@@ -37,21 +42,33 @@ test_that("expr_apply works", {
     expr_apply({a + b}, function(x) { string <<- paste(string, paste0(all.names(x), collapse = "")); x }, into = "leaves")
     expect_identical(string, " + a b")
 
+    string = ""
+    expr_apply(a ~ b, function(x) { string <<- paste(string, paste0(all.names(x), collapse = "")); x }, into = FALSE)
+    expect_identical(string, " ~ab")
+
+    string = ""
+    expr_apply(a ~ b, function(x) { string <<- paste(string, paste0(all.names(x), collapse = "")); x }, into = "leaves")
+    expect_identical(string, " ~ a b")
+
+    expect_error(expr_apply({a + b}, function(x) x, into = "error"))
+
     # Different modes of `how`.
-    x = list(quote(a), list(quote(b + c), list(quote(d + e))))
+    x = list(a = quote(a), list(quote(b + c), list(quote(d + e))))
     expect_identical(expr_apply(x, function(x) { if (all(as.character(x) %in% letters)) quote(.) else x }, into = TRUE, how = "replace"),
-        list(quote(.), list(quote(. + .), list(quote(. + .)))))
+        list(a = quote(.), list(quote(. + .), list(quote(. + .)))))
     expect_identical(expr_apply(x, function(x) { if (all(as.character(x) %in% letters)) quote(.) else x }, into = TRUE, how = "unlist"),
-        list(quote(.), quote(. + .), quote(. + .)))
+        list(a = quote(.), quote(. + .), quote(. + .)))
     expect_identical(expr_apply(x, function(x) { if (all(as.character(x) %in% letters)) quote(.) else x }, into = TRUE, how = "unique"),
         list(quote(.), quote(. + .)))
 
     # Use of second and third params of x.
     expect_identical(expr_apply(x,
-        function(x, name, idx) { if (is.null(name[[1]])) quote(x) else quote(y) },
+        function(x, name) { if (is.null(name[[1]])) quote(x) else quote(y) },
         into = "leaves", order = "post", how = "unlist"),
-        list(quote(y), quote(x(x, x)), quote(x(x, x))))
+        list(a = quote(y), quote(x(x, x)), quote(x(x, x))))
 
     expect_identical(expr_apply(x, function(x, name, idx) { idx }, into = FALSE),
-        list(1L, list(c(2L,1L), list(c(2L,2L,1L)))))
+        list(a = 1L, list(c(2L,1L), list(c(2L,2L,1L)))))
+
+    expect_error(expr_apply(x, function(x, name, idx, foo) { idx }, into = FALSE))
 })

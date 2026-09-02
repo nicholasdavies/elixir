@@ -20,8 +20,8 @@
 #' while replacing part of an `expr_list` with an expression or a "plain" list
 #' of expressions retains the existing anchoring information.
 #'
-#' @param ... Expressions to include in the list. If the arguments are named,
-#' these will be passed on to the returned list.
+#' @param ... [Expressions][elixir-expression] to include in the list. If the
+#' arguments are named, these will be passed on to the returned list.
 #' @param env Environment for injections in `...` (see
 #' [expression][elixir-expression]).
 #' @param xl An `expr_list`.
@@ -65,45 +65,72 @@ expr_list = function(..., env = parent.frame())
 
 #' @rdname expr_list
 #' @order 2
-#' @keywords internal
 #' @export
 `[.expr_list` = function(xl, i)
 {
     if (missing(i)) {
         return (xl)
     }
-    structure(`[.simple.list`(xl, i), class = "expr_list", into = attr(xl, "into")[i])
+    into = attr(xl, "into")[i]
+    into[is.na(into)] = FALSE # For case where any(i > length(xl))
+    structure(`[.simple.list`(xl, i), class = "expr_list", into = into)
+}
+
+rep_len_warn = function(x, length.out)
+{
+    if (length.out %% length(x) != 0) {
+        warning("number of items to replace is not a multiple of replacement length", call. = FALSE)
+    }
+    rep_len(x, length.out)
+}
+
+index_replace = function(xl, i, value, cl)
+{
+    if (is.null(value)) {
+        # value is NULL: omit elements in i
+        i = seq_along(xl)[i] # Work with positive, valid subscripts
+        i = i[!is.na(i)]
+        if (length(i) > 0) {
+            return (structure(`[.simple.list`(xl, -i), class = cl, into = attr(xl, "into")[-i]))
+        } else {
+            return (xl)
+        }
+    }
+
+    # To avoid recursing into this function below
+    l = unclass(xl);
+    into = attr(xl, "into");
+
+    # Expand length of list, if needed
+    if (any(i > length(xl))) {
+        l[i[i > length(xl)]] = list(NULL)
+        into[i[i > length(xl)]] = FALSE
+    }
+
+    nreplace = length(into[i]);
+
+    if (inherits(value, "expr_list")) {
+        l[i] = rep_len_warn(value, nreplace);
+        into[i] = rep_len(attr(value, "into"), nreplace);
+    } else if (is.list(value)) {
+        if (any(!sapply(value, function(x) { rlang::is_expression(x) || class(x) == "expr_alt" }))) {
+            stop("When replacing part of an ", cl, " with a list, each element of that list must be a valid expr_list element.")
+        }
+        l[i] = rep_len_warn(value, nreplace);
+    } else if (rlang::is_expression(value)) {
+        l[i] = rep_len_warn(list(value), nreplace);
+    } else {
+        stop("Can only replace part of an ", cl, " with an expr_list, a list of expressions, or an expression.")
+    }
+    structure(l, class = cl, into = into);
 }
 
 #' @rdname expr_list
 #' @order 3
-#' @keywords internal
 #' @export
 `[<-.expr_list` = function(xl, i, value)
 {
-    if (is.null(value)) {
-        # value is NULL: omit elements in i
-        return (structure(`[.simple.list`(xl, -i), class = "expr_list", into = attr(xl, "into")[-i]))
-    }
-
-    l = unclass(xl); # To avoid recursing into this function below
-    into = attr(xl, "into");
-    nreplace = length(into[i]);
-
-    if (is(value, "expr_list")) {
-        l[i] = rep_len(value, nreplace);
-        into[i] = rep_len(attr(value, "into"), nreplace);
-    } else if (is.list(value)) {
-        if (any(!sapply(value, function(x) { rlang::is_expression(x) || class(x) == "expr_alt" }))) {
-            stop("When replacing part of an expr_list with a list, each element of that list must be a valid expr_list element.")
-        }
-        l[i] = rep_len(value, nreplace);
-    } else if (rlang::is_expression(value)) {
-        l[i] = rep_len(list(value), nreplace);
-    } else {
-        stop("Can only replace part of an expr_list with an expr_list, a list of expressions, or an expression.")
-    }
-    structure(l, class = "expr_list", into = into);
+    index_replace(xl, i, value, "expr_list")
 }
 
 #' @keywords internal
@@ -123,7 +150,7 @@ print.expr_list = function(x, ...)
             if (n != "") {
                 n = paste0(n, " = ")
             }
-            if (is(y, "expr_alt")) {
+            if (inherits(y, "expr_alt")) {
                 return (paste0(n, paste0(mapply(fmt_expr, y, attr(y, "into")), collapse = " ? ")))
             } else {
                 return (paste0(n, fmt_expr(y, i)))
@@ -134,42 +161,17 @@ print.expr_list = function(x, ...)
     cat("expr_list of length ", length(x), ": ", paste0(str, collapse = ", "), sep = "")
 }
 
+#' Assign to part of an `expr_alt`.
+#'
 #' This exists primarily so that `expr_apply` can be applied to an `expr_list`,
 #' which may potentially contain elements of class `expr_alt`.
 #'
+#' @return The modified object of class `"expr_alt"`.
 #' @keywords internal
 #' @export
 `[<-.expr_alt` = function(xl, i, value)
 {
-    if (is.null(value)) {
-        # value is NULL: omit elements in i
-        if (is.logical(i)) { i = which(i) }
-        if (length(i) > 0) {
-            return (structure(`[.simple.list`(xl, -i), class = "expr_alt", into = attr(xl, "into")[-i]))
-        } else {
-            # This special case is needed, as we cannot do list[-numeric()] for the whole list.
-            return (xl)
-        }
-    }
-
-    l = unclass(xl); # To avoid recursing into this function below
-    into = attr(xl, "into");
-    nreplace = length(into[i]);
-
-    if (is(value, "expr_list")) {
-        l[i] = rep_len(value, nreplace);
-        into[i] = rep_len(attr(value, "into"), nreplace);
-    } else if (is.list(value)) {
-        if (any(!sapply(value, rlang::is_expression))) {
-            stop("When replacing part of an expr_alt with a list, each element of that list must be a valid expression.")
-        }
-        l[i] = rep_len(value, nreplace);
-    } else if (rlang::is_expression(value)) {
-        l[i] = rep_len(list(value), nreplace);
-    } else {
-        stop("Can only replace part of an expr_alt with an expr_list, a list of expressions, or an expression.")
-    }
-    structure(l, class = "expr_alt", into = into);
+    index_replace(xl, i, value, "expr_alt")
 }
 
 #' Get or set a subexpression
@@ -205,12 +207,12 @@ print.expr_list = function(x, ...)
 #'
 #' @param expr The expression to select from. Can also be a list of
 #'     expressions, in which case the first element of `index` selects the
-#'     expression from the list.
+#'     expression from the list. Can also be a formula.
 #' @param idx A valid index: `NULL` or an integer vector.
 #' @param env Environment for any injections in `expr` (see
 #' [expression][elixir-expression]).
 #' @param value Replacement; an expression.
-#' @return The subexpression, which can be modified.
+#' @return The element of the expression selected by `idx`.
 #' @seealso [expr_match()], [expr_locate()] which return indices to
 #' subexpressions.
 #' @examples
@@ -225,7 +227,7 @@ print.expr_list = function(x, ...)
 expr_sub = function(expr, idx, env = parent.frame())
 {
     expr = do.call(do_parse_simple, list(substitute(expr), env))
-    if (is(expr, "expr_wrap")) {
+    if (inherits(expr, "expr_wrap")) {
         expr = expr[[1]]
     }
 
@@ -237,12 +239,11 @@ expr_sub = function(expr, idx, env = parent.frame())
 }
 
 #' @rdname expr_sub
-#' @keywords internal
 #' @export
 `expr_sub<-` = function(expr, idx, env = parent.frame(), value)
 {
     expr = do.call(do_parse_simple, list(substitute(expr), env))
-    if (is(expr, "expr_wrap")) {
+    if (inherits(expr, "expr_wrap")) {
         expr = expr[[1]]
     }
 
@@ -268,8 +269,14 @@ do_parse_simple = function(expr, env = parent.frame())
     }
 
     # Check for mistakes in specifying -- tilde or question mark
-    if (length(lx) > 1 && (identical(lx[[1]], quote(`~`)) || identical(lx[[1]], quote(`?`)))) {
-        stop("Do not use anchor operator (~) or alternatives operator (?) in first argument.", call. = FALSE)
+    if (length(lx) > 1) {
+        if (length(lx) == 2 && identical(lx[[1]], quote(`~`)) && length(lx[[2]]) > 1 && identical(lx[[2]][[1]], quote(`{`))) {
+            stop("Do not use anchor operator (~) in first argument.", call. = FALSE)
+        }
+
+        if (length(lx) > 0 && identical(lx[[1]], quote(`?`))) {
+            stop("Do not use alternatives operator (?) in first argument.", call. = FALSE)
+        }
     }
 
     # Convert env to an environment if it is a list
@@ -345,13 +352,13 @@ do_parse = function(expr, env = parent.frame())
 
     # Process the list
     for (i in seq_along(result)) {
-        if (is(result[[i]], "expr_alt")) {
+        if (inherits(result[[i]], "expr_alt")) {
             for (j in seq_along(result[[i]])) {
                 result[[i]][j] = list(debrace(result[[i]][[j]], to_eval[[i]][[j]], env))
             }
         } else {
             result[i] = list(debrace(result[[i]], to_eval[[i]], env))
-            if (is(result[[i]], "expr_list")) {
+            if (inherits(result[[i]], "expr_list")) {
                 # Already expr_list
                 return (result[[i]])
             } else if (is.list(result[[i]])) {
@@ -413,6 +420,13 @@ debrace = function(x, ev, env)
     }
 }
 
+# Returns TRUE if x is an expression (rlang::expression()) or a formula, i.e.
+# tests whether x is suitable as the 1st expr argument to the expr_ functions.
+is_expr1 = function(x)
+{
+    rlang::is_expression(x) || rlang::is_formula(x, scoped = TRUE)
+}
+
 #' Expressions in `elixir`
 #'
 #' @description `elixir` is primarily a package for working with what it calls
@@ -420,7 +434,9 @@ debrace = function(x, ev, env)
 #' [rlang::is_expression()] returns `TRUE`. This includes calls, like the
 #' results of evaluating `quote(f(x))` or `quote(a:b)`, symbols like
 #' `quote(z)`, and syntactic literals like `2.5`, `"hello"`, `NULL`, `FALSE`,
-#' and so on.
+#' and so on. In many cases, you can also use `elixir` to work with
+#' [formulas][base::tilde], even though [rlang::is_expression()] returns
+#' `FALSE` for formulas.
 #'
 #' This is not to be confused with the built-in type [base::expression], which
 #' is essentially a special way of storing a vector of multiple "expressions".
@@ -530,6 +546,15 @@ NULL
 #' tricky. Packages such as `rlang` help to make this task easier. `elixir`
 #' makes a few extra shortcuts available, and is geared for advanced R
 #' users.
+#'
+#' `elixir` provides functions for finding, extracting, and replacing patterns
+#' in 'R' language objects, similarly to how regular expressions can be used to
+#' find, extract, and replace patterns in text. It also provides functions for
+#' generating code using specially-formatted template files and for translating
+#' 'R' expressions into similar expressions in other programming languages.
+#'
+#' The package may be helpful for advanced uses of 'R' expressions, such as
+#' developing domain-specific languages.
 #'
 #' @section Find and replace for language objects:
 #'

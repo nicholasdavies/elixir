@@ -22,9 +22,31 @@
 #' end
 #' ```
 #'
-#' the `else` keyword both decreases and increases the indent level.
+#' the `if` keyword increases the indent level, the `else` keyword both
+#' decreases and increases the indent level, and the `end` keyword decreases
+#' the indent level.
 #'
-#' Some unusual character sequences may break [reindent()].
+#' If provided, the `ignore` element of `rules` should be a list of character
+#' vectors. A character vector of length one is assumed to start a comment that
+#' runs to the end of the line (e.g. `"#"` in R). If length two, the two
+#' symbols are assumed to start and end a comment or string (e.g. `"/*"` and
+#' `"*/"` in C). If length three, then the first two symbols are start and end
+#' delimiters of a comment or string, while the third symbol is an "escape"
+#' character that escapes the end delimiter (and can also escape itself). This
+#' is typically a backslash.
+#'
+#' [reindent()] supports "raw strings" in R, C, C++, and Lua code but only in
+#' limited cases. In R, when using [raw character constants][Quotes] you must
+#' use an uppercase `R`, the double quote symbol and zero to two hyphens. In
+#' C/C++, when using
+#' [raw string literals](https://en.cppreference.com/w/cpp/language/string_literal.html)
+#' you must use the prefix `R`, and zero to two hyphens as the delimiter char
+#' sequence (plus parentheses). In Lua, you can use
+#' [long brackets](https://www.lua.org/manual/5.2/manual.html#3.1) with zero
+#' to two equals signs. Any other attempt to use raw strings will probably
+#' break [reindent()].
+#'
+#' Other unusual character sequences may also break [reindent()].
 #'
 #' @param lines Character vector with lines of text; can have internal
 #'     newlines.
@@ -84,10 +106,12 @@ reindent = function(lines, rules, tab = "    ", start = 0L)
                 # Look for sought-for end token
                 locations_end = locate_end_ignore(tokens, ignore[[in_ignore]]);
                 if (any(locations_end)) {
-                    # Closing symbol in this line: cut out and keep looking for comments
+                    # Closing symbol in this line: cut out and do not indent this line
                     cut_end = which(locations_end)[1];
                     tokens = tokens[-(1:cut_end)];
                     in_ignore = 0;
+                    indent_levels[l] = NA;
+                    next;
                 } else {
                     # If not here, preserve indent level from original and process next line
                     indent_levels[l] = NA;
@@ -121,9 +145,12 @@ reindent = function(lines, rules, tab = "    ", start = 0L)
                     # If comment is to closing symbol, try to find in this line
                     locations_end = ilevel != 0 & locate_end_ignore(tokens, ign);
                     if (any(locations_end)) {
-                        # Closing symbol in this line: cut out and keep looking for comments
+                        # Closing symbol in this line: cut out and keep looking for ignores
                         cut_start = which(locations[[itype]])[1];
                         cut_end = which(locations_end & seq_along(locations_end) > cut_start)[1];
+                        if (is.na(cut_end)) {
+                            cut_end = length(tokens);
+                        }
                         tokens[cut_start:cut_end] = "";
                         # We replace the cut-out tokens with "" rather than removing them
                         # so that removing an ignore from a line doesn't create new
@@ -154,8 +181,13 @@ reindent = function(lines, rules, tab = "    ", start = 0L)
         indent_levels[l] = indent_level + min(c(0L, itrace));
         indent_level = indent_level + tail(c(0L, itrace), 1L);
     }
+
+    # Actually do indentation.
+    # Generate leading whitespace
     tabs = stringr::str_dup(tab, indent_levels);
+    # Attach to all lines
     ind_lines = stringr::str_c(tabs, stringr::str_trim(lines, "left"));
+    # Use indented lines only when non-NA level
     lines = ifelse(is.na(indent_levels),
         lines,
         ind_lines
@@ -171,7 +203,7 @@ locate = function(tokens, what)
     for (k in what) {
         start = rep(TRUE, length(tokens));
         for (j in seq_along(k)) {
-            start = start & data.table::shift(tokens == k[j], n = 1L - j, fill = FALSE)
+            start = start & lshift(tokens == k[j], j - 1L)
         }
         pos = pos | start;
     }
@@ -182,11 +214,22 @@ locate = function(tokens, what)
 locate_end_ignore = function(tokens, ign)
 {
     loc = locate(tokens, ign[2]);
-    while (length(ign) >= 4) {
-        ign = ign[c(-1, -2)]
-        loc_neg = data.table::shift(locate(tokens, ign[1]), n = length(ign[[1]]) - 1L, fill = FALSE);
-        loc_pos = data.table::shift(locate(tokens, ign[2]), n = length(ign[[2]]) - 1L, fill = FALSE);
-        loc = loc & !(loc_neg & !loc_pos);
+    if (length(ign) == 3) {
+        neg = list(c(ign[[3]], ign[[2]]))
+        pos = list(c(ign[[3]], neg[[1]]))
+        while (TRUE) {
+            ln = locate(tokens, neg)
+            if (any(ln)) {
+                lp = locate(tokens, pos)
+                loc_neg = rshift(ln, length(neg) - 1L);
+                loc_pos = rshift(lp, length(pos) - 1L);
+                loc = loc & !(loc_neg & !loc_pos);
+                neg = list(c(ign[[3]], pos[[1]]))
+                pos = list(c(ign[[3]], neg[[1]]))
+            } else {
+                break;
+            }
+        }
     }
     return (loc)
 }

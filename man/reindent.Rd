@@ -48,9 +48,31 @@ else
 end
 }\if{html}{\out{</div>}}
 
-the \verb{else} keyword both decreases and increases the indent level.
+the \code{if} keyword increases the indent level, the \verb{else} keyword both
+decreases and increases the indent level, and the \code{end} keyword decreases
+the indent level.
 
-Some unusual character sequences may break \code{\link[=reindent]{reindent()}}.
+If provided, the \code{ignore} element of \code{rules} should be a list of character
+vectors. A character vector of length one is assumed to start a comment that
+runs to the end of the line (e.g. \code{"#"} in R). If length two, the two
+symbols are assumed to start and end a comment or string (e.g. \code{"/*"} and
+\code{"*/"} in C). If length three, then the first two symbols are start and end
+delimiters of a comment or string, while the third symbol is an "escape"
+character that escapes the end delimiter (and can also escape itself). This
+is typically a backslash.
+
+\code{\link[=reindent]{reindent()}} supports "raw strings" in R, C, C++, and Lua code but only in
+limited cases. In R, when using \link[=Quotes]{raw character constants} you must
+use an uppercase \code{R}, the double quote symbol and zero to two hyphens. In
+C/C++, when using
+\href{https://en.cppreference.com/w/cpp/language/string_literal.html}{raw string literals}
+you must use the prefix \code{R}, and zero to two hyphens as the delimiter char
+sequence (plus parentheses). In Lua, you can use
+\href{https://www.lua.org/manual/5.2/manual.html#3.1}{long brackets} with zero
+to two equals signs. Any other attempt to use raw strings will probably
+break \code{\link[=reindent]{reindent()}}.
+
+Other unusual character sequences may also break \code{\link[=reindent]{reindent()}}.
 }
 \examples{
 reindent(

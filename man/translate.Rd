@@ -48,8 +48,9 @@ should never be enclosed in parentheses. The default and usual value is
 integer(0), but (for example) it can be 2 for the \code{[} operator, as
 parentheses within the second argument (the content of the brackets)
 are redundant.
-The function \code{elixir:::op} can help to assemble such lists.
 }
+
+The function \code{elixir:::op} can help to assemble such lists.
 \item \code{paren} a \code{\link[glue:glue]{glue::glue()}} format string with \code{{x}} standing in for the
 enclosed expression. Describes how parentheses are expressed in the
 target language. Example: \code{"({x})"} is correct for virtually all
@@ -67,6 +68,31 @@ argument (the operand) returning a character string.
 
 It may be helpful to inspect \code{elixir:::ruleset} to clarify the above
 format.
+
+There are some important shortcomings to \code{\link[=translate]{translate()}}. Here are some
+potential pitfalls:
+\itemize{
+\item Named arguments are not supported, because we cannot translate an R
+function call like \code{mean(x, na.rm = TRUE)} without knowing which
+parameter of \code{mean} matches to \code{na.rm}.
+\item Division: An R expression like \code{1/3} gets translated into \code{1./3.} in
+C/C++, as numeric literals are coerced to type \code{double}. So both of these
+evaluate to 0.333. However, the R expression \code{1L/3L} will get translated
+into \code{1/3} in C/C++, which evaluates to 0 (as it is integer division).
+\item Modulo: R uses "Knuth's modulo", where \code{a \%\% b} has the same sign as \code{b}.
+Lua also uses Knuth's modulo, but C/C++ use "truncated modulo", where
+\verb{a \% b} has the same sign as \code{a}. (see
+\href{https://en.wikipedia.org/wiki/Modulo#Variants_of_the_definition}{Wikipedia}
+for details). So when converting a modulo expression from R to C/C++, a
+call to the function \code{kmod} is generated in the C/C++ expression. This is
+not a standard library function, so you will have to provide a definition
+yourself. A workable definition is:
+\verb{double kmod(double x, double y) \{ double r = fmod(x, y); return r && r < 0 != y < 0 ? r + y : r; \}}
+\item Types: In R, the type of \code{a \%\% b} and of \code{a \%/\% b} depends on the type of
+\code{a} and \code{b} (if both are integers, the result is an integer; if at least
+one is numeric, the result is numeric).
+\item Chained assignment does not work in Lua.
+}
 }
 \examples{
 translate({x ^ y}, "C++")

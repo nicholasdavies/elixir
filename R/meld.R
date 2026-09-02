@@ -8,15 +8,15 @@
 #' This function is experimental.
 #'
 #' @details
-#' First, any blocks of text starting with the delimiter `/***R` and
-#' ending with `*/` are run as R code.
+#' As `meld` works through each line of the text, any blocks of text starting
+#' with the delimiter `/***R` and ending with `*/` are run as R code.
 #'
-#' Second, any substrings in the text delimited by `` `backticks` ``
-#' are interpreted as R expressions to be substituted into the line. If
-#' any of the backticked expressions are length 0, the line is commented
-#' out (with the message "\[skipped\]" appended) using the `comment` element
-#' of `rules`. If any of the backticked expressions are length L > 1, the
-#' entire interpreted line is repeated L times, separated by newlines and
+#' Outside these blocks, any substrings in the text delimited by
+#' `` `backticks` `` are interpreted as R expressions to be substituted into
+#' the line. If any of the backticked expressions are length 0, the line is
+#' commented out (with the message "\[skipped\]" appended) using the `comment`
+#' element of `rules`. If any of the backticked expressions are length L > 1,
+#' the entire interpreted line is repeated L times, separated by newlines and
 #' with elements of the expression in sequence.
 #'
 #' There are some special sequences:
@@ -24,8 +24,7 @@
 #' - `` `!^expr` `` subs in `expr` on all but the first line of a multi-line expansion
 #' - `` `$expr` ``subs in `expr` only on the last line of a multi-line expansion
 #' - `` `!$expr` `` subs in `expr` on all but the last line of a multi-line expansion
-#' - `` `#include <file>` `` runs `file` through `meld` and pastes in the result
-#' - `` `#include "file"` `` interprets `file` as an R expression resolving to
+#' - `` `#include file` `` interprets `file` as an R expression resolving to
 #'   a filename, runs that file through `meld`, and pastes in the result
 #'
 #' The `#include` command must appear by itself on a line, and searches for
@@ -47,7 +46,8 @@
 #' a separator. This allows backticked expressions to apply over multiple
 #' lines.
 #'
-#' @param ... Lines to be interpreted as the text.
+#' @param ... Lines to be interpreted as the text. If there are any embedded
+#'     newlines in a line, the line is split into multiple lines.
 #' @param file File to be read in as the text.
 #' @param rules Which [rules][elixir-rules] to follow. You can pass a string
 #' from among `"C"`, `"C++"`, `"Lua"`, or `"R"`, or a list with elements:
@@ -59,6 +59,7 @@
 #' * `indent_both` Character vector of tokens which decrease, then increase the
 #' indent level (see [reindent()]).
 #' * `ignore` Comment and string literal delimiters (see [reindent()]).
+#'
 #' If `NULL`, the default, either guess rules from the file extension, or if
 #' that is not possible, do not put in 'skipped' comments and do not reindent
 #' the result. `NA` to not try to guess.
@@ -79,7 +80,7 @@
 #'     "{",
 #'     "    double `names` = `1:3`;",
 #'     "    double `dontdothis` = this_doesnt_matter;",
-#'     "    return a + b + c;",
+#'     "    return `paste(names, collapse = ' + ')`;",
 #'     "}")
 #' @export
 meld = function(..., file = NULL, rules = NULL, reindent = TRUE, ipath = ".", env = rlang::env_clone(parent.frame()))
@@ -122,6 +123,7 @@ meld = function(..., file = NULL, rules = NULL, reindent = TRUE, ipath = ".", en
         filename = file;
     } else {
         lines = as.character(c(...));
+        lines = unlist(lapply(lines, stringr::str_split_1, "\n"));
         filename = "... argument";
     }
 
@@ -185,21 +187,9 @@ meld = function(..., file = NULL, rules = NULL, reindent = TRUE, ipath = ".", en
             R_block_open = R_block_open[-blocks];
         }
 
-        # Execute #include <file> command if present
-        match_include = regmatches(lines[l],
-            regexec("^\\s*`\\s*#\\s*include\\s+<([^>]+)>\\s*`\\s*$", lines[l]));
-        if (length(match_include[[1]]) == 2) {
-            inc_file = file.path(ipath, match_include[[1]][2]);
-            if (!file.exists(inc_file)) {
-                stop("Cannot find #included file ", inc_file, ".");
-            }
-            lines[l] = meld(file = inc_file, rules = rules, reindent = reindent, ipath = ipath, env = env);
-            next;
-        }
-
-        # Execute #include "file" command if present
+        # Execute #include command if present
         match_include2 = regmatches(lines[l],
-            regexec("^\\s*`\\s*#\\s*include\\s+\"([^\"]+)\"\\s*`\\s*$", lines[l]));
+            regexec("^\\s*`\\s*#\\s*include\\s+([^`]+)`\\s*$", lines[l]));
         if (length(match_include2[[1]]) == 2) {
             filename = eval(str2lang(match_include2[[1]][2]), envir = env);
             inc_file = file.path(ipath, filename);
@@ -269,7 +259,8 @@ meld = function(..., file = NULL, rules = NULL, reindent = TRUE, ipath = ".", en
         # with newlines within, indent non-first lines within character according to spaces preceding backtick.
         # This is so lines like this
         #     `lines_of_code`
-        # include the spacing before `lines_of_code` for each line
+        # include the spacing before `lines_of_code` for each line, even if
+        # `lines_of_code` is just a length-1 string (with embedded newlines).
         if (length(sE) == 1 && sL[1] %like% "^[ \t]+$" && is.character(sE[[1]]) && any(sE[[1]] %like% "\n"))
         {
             sE[[1]] = stringr::str_replace_all(sE[[1]], "\n", paste0("\n", sL[1]));

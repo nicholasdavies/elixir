@@ -42,10 +42,10 @@ functionality through the functions `expr_match()`, `expr_replace()`, and the
 "shortcut" functions `expr_count()`, `expr_detect()`, `expr_extract()`, and
 `expr_locate()`.
 
-Frequent users of the excellent [`stringr`](https://stringr.tidyverse.org/)
-package will recognize the intentional similarity between the above functions
-and `str_match()`, `str_replace()`, `str_count()`, `str_detect()`,
-`str_extract()`, and `str_locate()` from `stringr`.
+Frequent users of the [`stringr`](https://stringr.tidyverse.org/) package will 
+recognize the intentional similarity between the above functions and 
+`str_match()`, `str_replace()`, `str_count()`, `str_detect()`, `str_extract()`, 
+and `str_locate()` from `stringr`.
 
 The easiest way to demonstrate these is through an example.
 
@@ -85,7 +85,7 @@ func <- function(t, y, parms)
 # matplot(sol[, 1], sol[, -1], type = "l")
 ```
 
-![](ode_plot.png)
+![Oscillating time series of predator and prey population size](ode_plot.png)\
 
 If you run those last two lines that are commented out, you should see the
 solution plotted as above. (The lines are commented out so that `deSolve` isn't
@@ -340,7 +340,7 @@ system <- quote({
 run_ode(system)
 ```
 
-![](ode_plot.png)
+![Oscillating time series of predator and prey population size](ode_plot.png)\
 
 # Other `elixir` features
 

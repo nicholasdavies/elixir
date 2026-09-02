@@ -26,6 +26,7 @@
 #'      integer(0), but (for example) it can be 2 for the `[` operator, as
 #'      parentheses within the second argument (the content of the brackets)
 #'      are redundant.
+#'
 #'    The function `elixir:::op` can help to assemble such lists.
 #' * `paren` a [glue::glue()] format string with `{x}` standing in for the
 #'    enclosed expression. Describes how parentheses are expressed in the
@@ -43,6 +44,29 @@
 #'
 #' It may be helpful to inspect `elixir:::ruleset` to clarify the above
 #' format.
+#'
+#' There are some important shortcomings to [translate()]. Here are some
+#' potential pitfalls:
+#' * Named arguments are not supported, because we cannot translate an R
+#'   function call like `mean(x, na.rm = TRUE)` without knowing which
+#'   parameter of `mean` matches to `na.rm`.
+#' * Division: An R expression like `1/3` gets translated into `1./3.` in
+#'   C/C++, as numeric literals are coerced to type `double`. So both of these
+#'   evaluate to 0.333. However, the R expression `1L/3L` will get translated
+#'   into `1/3` in C/C++, which evaluates to 0 (as it is integer division).
+#' * Modulo: R uses "Knuth's modulo", where `a %% b` has the same sign as `b`.
+#'   Lua also uses Knuth's modulo, but C/C++ use "truncated modulo", where
+#'   `a % b` has the same sign as `a`. (see
+#'   [Wikipedia](https://en.wikipedia.org/wiki/Modulo#Variants_of_the_definition)
+#'   for details). So when converting a modulo expression from R to C/C++, a
+#'   call to the function `kmod` is generated in the C/C++ expression. This is
+#'   not a standard library function, so you will have to provide a definition
+#'   yourself. A workable definition is:
+#'   `double kmod(double x, double y) { double r = fmod(x, y); return r && r < 0 != y < 0 ? r + y : r; }`
+#' * Types: In R, the type of `a %% b` and of `a %/% b` depends on the type of
+#'   `a` and `b` (if both are integers, the result is an integer; if at least
+#'   one is numeric, the result is numeric).
+#' * Chained assignment does not work in Lua.
 #'
 #' @param expr [Expression][elixir-expression] or list of
 #'     [expressions][elixir-expression] to be translated.
@@ -72,7 +96,7 @@ translate = function(expr, rules, env = parent.frame())
     result = lapply(expr, function(x) translate_sub(x, rules)[[1]]);
 
     # Return result
-    if (is(expr, "expr_wrap")) {
+    if (inherits(expr, "expr_wrap")) {
         return (result[[1]])
     } else {
         return (result)
@@ -90,6 +114,12 @@ translate_sub = function(x, rules)
         args = lapply(x[-1], translate_sub, rules)
         A = sapply(args, `[[`, 1) # each argument as a string
         P = sapply(args, `[[`, 2) # precedence of each argument's top level call, i.e. "lower-level precedence"
+
+        # TODO Do something with named elements! This could happen with
+        # e.g. [ or [[ operator (named args), function calls (named args)
+        if (any(rlang::have_name(args))) {
+            stop("No support for named args. f is ", f, ", names are ", paste(names(x), collapse = ", "))
+        }
 
         # Special treatment for "("
         # This is needed because we can't assign ( a high precedence (e.g. 0th)
@@ -131,12 +161,6 @@ translate_sub = function(x, rules)
         A[needed] =
             glue::glue_data(list(x = A[needed]), rules$paren)
 
-        # TODO Do something with named elements! This could happen with
-        # e.g. [ or [[ operator (named args), function calls (named args)
-        if (any(rlang::have_name(x))) {
-            stop("No support for named args. f is ", f, ", names are ", paste(names(x), collapse = ", "))
-        }
-
         # Return result
         return (list(
             glue::glue_data(list(A = A), call_def$str),
@@ -173,8 +197,8 @@ translate_sub = function(x, rules)
 #' @export
 lang2str = function(x)
 {
-    if (!rlang::is_expression(x)) {
-        stop("lang2str only works with expressions.")
+    if (!is_expr1(x)) {
+        stop("lang2str only works with expressions and formulae.")
     }
     paste0(deparse(x, width.cutoff = 500), collapse = "")
 }

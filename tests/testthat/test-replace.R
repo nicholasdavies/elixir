@@ -9,12 +9,37 @@ test_that("expr_replace works", {
     expect_identical(expr_replace({ a + x }, ~{ .X + .Y }, { b }, n = 1), quote(b))
     expect_identical(expr_replace({ a + x }, ~{ .X + .Y }, { .Y + 2*.X^.X }, n = 1), quote(x + 2*a^a))
 
+    # More complex expressions
+    expect_identical(expr_replace({ a + b + c }, { ..A + ..B }, { ..A - ..B }), quote(a - b - c))
+    expect_identical(expr_replace({ a * b * c }, { ..A * ..B }, { ..A %*% ..B }), quote(a %*% b %*% c))
+
+    expect_identical(expr_replace({ a + (b * c / d) - (e * (f * g) + h * ((((i * j) / k) - l * m) / o) * p) / q },
+        { ..A * ..B }, { ..A %*% ..B },
+        { ..A / ..B }, { ..A %/% ..B },
+        { ..A + ..B }, { ..A %+% ..B }),
+        quote(a %+% (b %*% c %/% d) - (`%+%`(e %*% (f %*% g), h %*% ((((i %*% j)%/%k) - l %*% m)%/%o) %*% p)) %/% q))
+
     # Replacing in an expr_list; replacing alternatives
     exprs = expr_list(quote(a + x), quote(a + y))
     expect_identical(expr_replace(exprs, {a}, {b}, {x}, {y}), expr_list({b + y}, {b + y}))
-    expect_identical(expr_replace(exprs, {a}, {b}, {x}, {y}, n = 1), expr_list({b + y}, {b + y}))
+    expect_identical(expr_replace(exprs,
+        patterns = expr_list({a}, {x}), replacements = expr_list({b}, {y}), n = 1),
+        expr_list({b + y}, {b + y}))
     expect_identical(expr_replace(exprs, {a} ? {x}, {b} ? {y}, n = 1), expr_list({b + x}, {b + y}))
     expect_identical(expr_replace(exprs, {a} ? {x}, {b} ? {y}), expr_list({b + y}, {b + y}))
+    expect_error(expr_replace(exprs, {a}, {b}, {x}))
+    expect_error(expr_replace(exprs,
+        patterns = expr_list({a}), replacements = expr_list({b}, {y}), n = 1))
+    expect_error(expr_replace(exprs, {a}, {b} ? {y}))
+
+    # Formulas
+    expect_identical(expr_replace(~a,        ~{ a }, { b }, n = 1), ~a)
+    expect_identical(expr_replace(~a,         { a }, { b }, n = 1), ~b)
+    expect_identical(expr_replace(y ~ a + x, ~{ a }, { b }, n = 1), y ~ a + x)
+    expect_identical(expr_replace(y ~ a + x,  { a }, { b }, n = 1), y ~ b + x)
+    expect_identical(expr_replace(y ~ a + x, ~{ .X + .Y }, { b }, n = 1), y ~ a + x)
+    expect_identical(expr_replace(y ~ a + x,  { .X + .Y }, { b }, n = 1), y ~ b)
+    expect_identical(expr_replace(list(~a, ~z), { a }, { b }, n = 1), list(~b, ~z))
 
     # References to temporary match entries
     expect_identical(expr_replace({ E = m * c^2 },

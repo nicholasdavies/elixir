@@ -9,7 +9,8 @@
 #' expr_replace(expr, ..., patterns, replacements,
 #'     n = Inf, env = parent.frame())
 #' @param expr Input. An [expression][elixir-expression], [expr_list], or
-#'     [list()] of expressions.
+#'     [list()] of expressions. Also works with [formulas][base::tilde] or
+#'     lists of formulas.
 #' @param ... Alternating series of patterns and replacements. Each pattern
 #'     should be a single [expression][elixir-expression] (though alternatives
 #'     can be specified with `?`). Each replacement should be either a single
@@ -98,15 +99,16 @@ expr_replace = function(expr, ..., patterns, replacements, n = Inf, env = parent
     # Do replacement
     result = lapply(expr, function(x) {
         for (j in seq_along(patterns)) {
-            matches = expr_match(x, patterns[j], n = n, dotnames = TRUE)
+            matches = expr_match(x, patterns[j], n = n, dotnames = TRUE, subloc = TRUE)
+            # Proceed backward through matches, to do deepest matches in parse tree first
             for (m in rev(seq_along(matches))) {
                 if (is.function(replacements[[j]])) {
                     # Function replacement: call function with captures
-                    substitution = do_fn_replace(replacements[[j]], matches[[m]])
+                    substitution = do_fn_replace(replacements[[j]], matches[[m]], x)
                 } else {
                     # Expression replacement
-                    if (is(replacements[[j]], "expr_alt")) {
-                        if (!is(patterns[[j]], "expr_alt") || length(patterns[[j]]) != length(replacements[[j]])) {
+                    if (inherits(replacements[[j]], "expr_alt")) {
+                        if (!inherits(patterns[[j]], "expr_alt") || length(patterns[[j]]) != length(replacements[[j]])) {
                             stop("When replacement is a set of alternatives, pattern must also be a set of alternatives of the same length.")
                         }
                         substitution = replacements[[j]][[matches[[m]]$alt]];
@@ -118,7 +120,8 @@ expr_replace = function(expr, ..., patterns, replacements, n = Inf, env = parent
                     for (k in seq_along(matches[[m]])) {
                         nm = names(matches[[m]])[k];
                         if (nm %like% "^\\.") {
-                            substitution = replace_name(substitution, as.name(nm), matches[[m]][[k]]);
+                            substitution = replace_name(substitution, as.name(nm),
+                                match_contents(x, matches[[m]], nm));
                         }
                     }
                 }
@@ -129,7 +132,7 @@ expr_replace = function(expr, ..., patterns, replacements, n = Inf, env = parent
     })
 
     # Return result
-    if (is(expr, "expr_wrap")) {
+    if (inherits(expr, "expr_wrap")) {
         return (result[[1]])
     } else {
         attributes(result) = attributes(expr)
@@ -150,17 +153,31 @@ replace_name = function(expr, name, replacement)
     return (expr)
 }
 
+# Contents of the capture named nm in match, as it currently stands in expr
+match_contents = function(expr, match, nm)
+{
+    loc = match[[paste0("loc", nm)]];
+    if (is.null(loc)) {
+        return (match[[nm]])
+    } else if (length(loc) == 0) {
+        return (expr)
+    }
+    return (expr[[loc]])
+}
+
 # Call a replacement function with captures from a match
-do_fn_replace = function(fn, match_obj)
+do_fn_replace = function(fn, match, expr)
 {
     # Build match list with leading dots stripped from capture names
     m = list()
-    for (k in seq_along(match_obj)) {
-        nm = names(match_obj)[k]
-        if (nm %like% "^\\.") {
-            m[[sub("^\\.+", "", nm)]] = match_obj[[k]]
+    for (k in seq_along(match)) {
+        nm = names(match)[k]
+        if (nm %like% "^loc\\.") {
+            next # capture locations are not passed to the replacement function
+        } else if (nm %like% "^\\.") {
+            m[[sub("^\\.+", "", nm)]] = match_contents(expr, match, nm)
         } else {
-            m[[nm]] = match_obj[[k]]
+            m[[nm]] = match[[k]]
         }
     }
 
