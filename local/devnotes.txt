@@ -1,9 +1,5 @@
 TODO
 
-Next step:
-
-Make expr_replace work with function replacements as well, expr_apply style.
-
 X   Make sure NA into doesn't conflict with other into = NA stuff
 -   Rename expr_translate to something else?
 -   The only use case for expr_list, really, is within patterns / replacements
