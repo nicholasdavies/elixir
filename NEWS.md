@@ -1,4 +1,4 @@
-# elixir (development version)
+# elixir 0.1.2
 
 -   Extended expr_replace() to accept functions as replacements.
 -   Fixed a bug in expr_replace() that would sometimes not replace all 
