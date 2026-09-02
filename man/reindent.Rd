@@ -65,7 +65,7 @@ is typically a backslash.
 limited cases. In R, when using \link[=Quotes]{raw character constants} you must
 use an uppercase \code{R}, the double quote symbol and zero to two hyphens. In
 C/C++, when using
-\href{https://en.cppreference.com/w/cpp/language/string_literal.html}{raw string literals}
+\href{https://en.cppreference.com/cpp/language/string_literal}{raw string literals}
 you must use the prefix \code{R}, and zero to two hyphens as the delimiter char
 sequence (plus parentheses). In Lua, you can use
 \href{https://www.lua.org/manual/5.2/manual.html#3.1}{long brackets} with zero

@@ -39,7 +39,7 @@
 #' limited cases. In R, when using [raw character constants][Quotes] you must
 #' use an uppercase `R`, the double quote symbol and zero to two hyphens. In
 #' C/C++, when using
-#' [raw string literals](https://en.cppreference.com/w/cpp/language/string_literal.html)
+#' [raw string literals](https://en.cppreference.com/cpp/language/string_literal)
 #' you must use the prefix `R`, and zero to two hyphens as the delimiter char
 #' sequence (plus parentheses). In Lua, you can use
 #' [long brackets](https://www.lua.org/manual/5.2/manual.html#3.1) with zero
