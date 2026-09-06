@@ -48,7 +48,7 @@ Otherwise, `rules` should be a list with the following elements:
 - `ops`: an unnamed list of operator definitions, each of which should
   be a list with four elements:
 
-  - `arity` the number of operands
+  - `arity` the number of operands (use -1 for any arity)
 
   - `prec` the precedence of the operator (lower numbers equal higher
     precedence)
@@ -94,15 +94,15 @@ format.
 There are some important shortcomings to `translate()`. Here are some
 potential pitfalls:
 
-- Named arguments are not supported, because we cannot translate an R
-  function call like `mean(x, na.rm = TRUE)` without knowing which
-  parameter of `mean` matches to `na.rm`.
+- Named arguments to functions are not supported, because we cannot
+  translate an R function call like `mean(x, na.rm = TRUE)` without
+  knowing which parameter of `mean` matches to `na.rm`.
 
 - Division: An R expression like `1/3` gets translated into `1./3.` in
   C/C++, as numeric literals are coerced to type `double`. So both of
-  these evaluate to 0.333. However, the R expression `1L/3L` will get
-  translated into `1/3` in C/C++, which evaluates to 0 (as it is integer
-  division).
+  these evaluate to 0.333. However, the R expression `1L/3L`, which
+  evaluates to 0.333, will get translated into `1/3` in C/C++, which
+  evaluates to 0 (as it is integer division).
 
 - Modulo: R uses "Knuth's modulo", where `a %% b` has the same sign as
   `b`. Lua also uses Knuth's modulo, but C/C++ use "truncated modulo",
@@ -118,7 +118,11 @@ potential pitfalls:
   of `a` and `b` (if both are integers, the result is an integer; if at
   least one is numeric, the result is numeric).
 
-- Chained assignment does not work in Lua.
+- Assignment is not an expression in Lua, so neither chained assignment
+  (e.g. `a <- b <- c`) nor assignment as part of a function call or
+  operation (e.g. `a <- (b <- 1) + 1`) will work in Lua.
+
+- Both `[` and `[[` are translated into `[` for C/C++ and for Lua.
 
 ## Examples
 
