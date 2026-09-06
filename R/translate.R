@@ -14,7 +14,7 @@
 #' following elements:
 #' * `ops`: an unnamed list of operator definitions, each of which should be a
 #'   list with four elements:
-#'   - `arity` the number of operands
+#'   - `arity` the number of operands (use -1 for any arity)
 #'   - `prec` the precedence of the operator (lower numbers equal higher
 #'      precedence)
 #'   - `assoc` the associativity of the operator, either `"LTR"`, `"RTL"`, or
@@ -47,13 +47,14 @@
 #'
 #' There are some important shortcomings to [translate()]. Here are some
 #' potential pitfalls:
-#' * Named arguments are not supported, because we cannot translate an R
-#'   function call like `mean(x, na.rm = TRUE)` without knowing which
-#'   parameter of `mean` matches to `na.rm`.
+#' * Named arguments to functions are not supported, because we cannot
+#'   translate an R function call like `mean(x, na.rm = TRUE)` without knowing
+#'   which parameter of `mean` matches to `na.rm`.
 #' * Division: An R expression like `1/3` gets translated into `1./3.` in
 #'   C/C++, as numeric literals are coerced to type `double`. So both of these
-#'   evaluate to 0.333. However, the R expression `1L/3L` will get translated
-#'   into `1/3` in C/C++, which evaluates to 0 (as it is integer division).
+#'   evaluate to 0.333. However, the R expression `1L/3L`, which evaluates to
+#'   0.333, will get translated into `1/3` in C/C++, which evaluates to 0 (as
+#'   it is integer division).
 #' * Modulo: R uses "Knuth's modulo", where `a %% b` has the same sign as `b`.
 #'   Lua also uses Knuth's modulo, but C/C++ use "truncated modulo", where
 #'   `a % b` has the same sign as `a`. (see
@@ -66,7 +67,10 @@
 #' * Types: In R, the type of `a %% b` and of `a %/% b` depends on the type of
 #'   `a` and `b` (if both are integers, the result is an integer; if at least
 #'   one is numeric, the result is numeric).
-#' * Chained assignment does not work in Lua.
+#' * Assignment is not an expression in Lua, so neither chained assignment
+#'   (e.g. `a <- b <- c`) nor assignment as part of a function call or operation
+#'   (e.g. `a <- (b <- 1) + 1`) will work in Lua.
+#' * Both `[` and `[[` are translated into `[` for C/C++ and for Lua.
 #'
 #' @param expr [Expression][elixir-expression] or list of
 #'     [expressions][elixir-expression] to be translated.
@@ -110,10 +114,14 @@ translate_sub = function(x, rules)
         f = as.character(x[[1]]) # get function name
         n = length(x) - 1        # get number of arguments
 
-        # Process arguments
+        # Translate arguments (i.e. translation is performed depth-first).
+        # The result is a list of length n, where each element is a two-element
+        # list; the first element is the translated argument as a string, and
+        # the second element is the precedence of the argument's top-level call
+        # (the "lower-level precedence").
         args = lapply(x[-1], translate_sub, rules)
-        A = sapply(args, `[[`, 1) # each argument as a string
-        P = sapply(args, `[[`, 2) # precedence of each argument's top level call, i.e. "lower-level precedence"
+        A = sapply(args, `[[`, 1) # each translated argument
+        P = sapply(args, `[[`, 2) # precedence of each argument
 
         # TODO Do something with named elements! This could happen with
         # e.g. [ or [[ operator (named args), function calls (named args)
@@ -122,9 +130,9 @@ translate_sub = function(x, rules)
         }
 
         # Special treatment for "("
-        # This is needed because we can't assign ( a high precedence (e.g. 0th)
+        # This is needed because we can't assign `(` a high precedence (e.g. 0th)
         # in an ops table, as then e.g. (1+1) would come out ((1+1)) owing to
-        # the lower precedence of 1. We can't assign it a low precedence (e.g.
+        # the lower precedence of `+`. We can't assign it a low precedence (e.g.
         # 99th) because then e.g. (1) + (1), which is `+`(`(`(1), `(`(2)) comes
         # out as ((1)) + ((1)).
         if (f == "(" && n == 1) {
@@ -132,7 +140,7 @@ translate_sub = function(x, rules)
         }
 
         # Look for call in ops table
-        call_idx = which(names(rules$ops) == f & sapply(rules$ops, `[[`, "arity") == n)
+        call_idx = which(names(rules$ops) == f & sapply(rules$ops, `[[`, "arity") %in% c(-1, n))
         if (length(call_idx) == 0 && is_identifier(x[[1]])) { # TODO make "is_identifier" customizable.
             # No ops table hit: parse as function
             return (list(paste0(f, "(", paste0(A, collapse = ", "), ")"), 0))
@@ -161,7 +169,8 @@ translate_sub = function(x, rules)
         A[needed] =
             glue::glue_data(list(x = A[needed]), rules$paren)
 
-        # Return result
+        # Return result (translated subexpression plus precedence of
+        # subexpression's top level).
         return (list(
             glue::glue_data(list(A = A), call_def$str),
             call_def$prec[1]

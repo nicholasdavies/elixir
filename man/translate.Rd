@@ -36,7 +36,7 @@ following elements:
 \item \code{ops}: an unnamed list of operator definitions, each of which should be a
 list with four elements:
 \itemize{
-\item \code{arity} the number of operands
+\item \code{arity} the number of operands (use -1 for any arity)
 \item \code{prec} the precedence of the operator (lower numbers equal higher
 precedence)
 \item \code{assoc} the associativity of the operator, either \code{"LTR"}, \code{"RTL"}, or
@@ -72,13 +72,14 @@ format.
 There are some important shortcomings to \code{\link[=translate]{translate()}}. Here are some
 potential pitfalls:
 \itemize{
-\item Named arguments are not supported, because we cannot translate an R
-function call like \code{mean(x, na.rm = TRUE)} without knowing which
-parameter of \code{mean} matches to \code{na.rm}.
+\item Named arguments to functions are not supported, because we cannot
+translate an R function call like \code{mean(x, na.rm = TRUE)} without knowing
+which parameter of \code{mean} matches to \code{na.rm}.
 \item Division: An R expression like \code{1/3} gets translated into \code{1./3.} in
 C/C++, as numeric literals are coerced to type \code{double}. So both of these
-evaluate to 0.333. However, the R expression \code{1L/3L} will get translated
-into \code{1/3} in C/C++, which evaluates to 0 (as it is integer division).
+evaluate to 0.333. However, the R expression \code{1L/3L}, which evaluates to
+0.333, will get translated into \code{1/3} in C/C++, which evaluates to 0 (as
+it is integer division).
 \item Modulo: R uses "Knuth's modulo", where \code{a \%\% b} has the same sign as \code{b}.
 Lua also uses Knuth's modulo, but C/C++ use "truncated modulo", where
 \verb{a \% b} has the same sign as \code{a}. (see
@@ -91,7 +92,10 @@ yourself. A workable definition is:
 \item Types: In R, the type of \code{a \%\% b} and of \code{a \%/\% b} depends on the type of
 \code{a} and \code{b} (if both are integers, the result is an integer; if at least
 one is numeric, the result is numeric).
-\item Chained assignment does not work in Lua.
+\item Assignment is not an expression in Lua, so neither chained assignment
+(e.g. \code{a <- b <- c}) nor assignment as part of a function call or operation
+(e.g. \code{a <- (b <- 1) + 1}) will work in Lua.
+\item Both \code{[} and \code{[[} are translated into \code{[} for C/C++ and for Lua.
 }
 }
 \examples{
