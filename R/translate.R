@@ -173,7 +173,7 @@ translate_sub = function(x, rules)
         # subexpression's top level).
         return (list(
             glue::glue_data(list(A = A), call_def$str),
-            call_def$prec[1]
+            call_def$prec
         ))
     } else if (is.name(x)) {
         # Symbol: use symbol translator
@@ -215,5 +215,5 @@ lang2str = function(x)
 # Is x identifier-like?
 is_identifier = function(x)
 {
-    is.name(x) && as.character(x) %like% "^[[:alpha:].][[:alnum:]._]*"
+    is.name(x) && as.character(x) %like% "^[[:alpha:].][[:alnum:]._]*$"
 }
