@@ -147,6 +147,7 @@ ruleset = list(
             "*"   = op(2,  3, "LTR", "{A[1]} * {A[2]}"),
             "/"   = op(2,  3, "LTR", "{A[1]} / {A[2]}"),
             "%%"  = op(2,  3, "LTR", "{A[1]} % {A[2]}"), # TODO In R, `%%` type depends on type of operands
+            "%/%" = op(2,  3, "LTR", "math.floor({A[1]} / {A[2]})"), # TODO In R, `%/%` type depends on type of operands
             "+"   = op(2,  4, "LTR", "{A[1]} + {A[2]}"),
             "-"   = op(2,  4, "LTR", "{A[1]} - {A[2]}"),
             "<"   = op(2,  6, "LTR", "{A[1]} < {A[2]}"),
@@ -157,7 +158,6 @@ ruleset = list(
             "=="  = op(2,  6, "LTR", "{A[1]} == {A[2]}"),
             "&&"  = op(2,  7, "LTR", "{A[1]} and {A[2]}"),
             "||"  = op(2,  8, "LTR", "{A[1]} or {A[2]}"),
-            "%/%" = op(2, 98, "LTR", "math.floor({A[1]} / {A[2]})"), # TODO In R, `%/%` type depends on type of operands
             "="   = op(2, 99, "RTL", "{A[1]} = {A[2]}"), # TODO You can't chain assignments in Lua. This needs
             "<-"  = op(2, 99, "RTL", "{A[1]} = {A[2]}")  # to be handled specially therefore.
         ),
