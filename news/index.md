@@ -4,6 +4,8 @@
 
 ## elixir 0.1.2
 
+CRAN release: 2026-09-02
+
 - Extended expr_replace() to accept functions as replacements.
 - Fixed a bug in expr_replace() that would sometimes not replace all
   instances of a pattern.
