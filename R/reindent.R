@@ -59,6 +59,9 @@
 #' * `ignore` Comment and string literal delimiters (see Details).
 #' @param tab Character string; what to use as an indent.
 #' @param start Indent level to start at.
+#' @param stepwise If `TRUE`, ensure consecutive lines with the same indent
+#'     level never stand out by more than one indent level from surrounding
+#'     lines.
 #' @return Reindented lines as a character vector.
 #' @examples
 #' reindent(
@@ -71,7 +74,7 @@
 #'     ),
 #'     rules = "Lua")
 #' @export
-reindent = function(lines, rules, tab = "    ", start = 0L)
+reindent = function(lines, rules, tab = "    ", start = 0L, stepwise = TRUE)
 {
     # Get rules
     rules = check_rules(rules,
@@ -180,6 +183,33 @@ reindent = function(lines, rules, tab = "    ", start = 0L)
         itrace = cumsum(itrace);
         indent_levels[l] = indent_level + min(c(0L, itrace));
         indent_level = indent_level + tail(c(0L, itrace), 1L);
+    }
+
+    # Do "stepwise" postprocessing.
+    if (stepwise) {
+        compress = function(x, base = min(indent_levels))
+        {
+            n = length(x)
+            if (n == 0L) {
+                return (integer(0))
+            }
+            out = integer(n)
+            m = min(x)
+            deeper = x > m
+            out[!deeper] = base
+            if (any(deeper)) {
+                r = rle(deeper)
+                ends = cumsum(r$lengths)
+                starts = ends - r$lengths + 1L
+                for (k in which(r$values)) {
+                    idx = starts[k]:ends[k]
+                    out[idx] = compress(x[idx], base + 1L)
+                }
+            }
+            return (out)
+        }
+
+        indent_levels = compress(indent_levels)
     }
 
     # Actually do indentation.
