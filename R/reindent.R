@@ -187,7 +187,7 @@ reindent = function(lines, rules, tab = "    ", start = 0L, stepwise = TRUE)
 
     # Do "stepwise" postprocessing.
     if (stepwise) {
-        compress = function(x, base = min(indent_levels))
+        compress = function(x, base)
         {
             n = length(x)
             if (n == 0L) {
@@ -209,7 +209,11 @@ reindent = function(lines, rules, tab = "    ", start = 0L, stepwise = TRUE)
             return (out)
         }
 
-        indent_levels = compress(indent_levels)
+        # Leave ignored lines alone
+        keep = !is.na(indent_levels);
+        if (any(keep)) {
+            indent_levels[keep] = compress(indent_levels[keep], min(indent_levels[keep]));
+        }
     }
 
     # Actually do indentation.
