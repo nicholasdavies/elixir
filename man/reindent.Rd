@@ -4,7 +4,7 @@
 \alias{reindent}
 \title{Reindent some lines of code}
 \usage{
-reindent(lines, rules, tab = "    ", start = 0L)
+reindent(lines, rules, tab = "    ", start = 0L, stepwise = TRUE)
 }
 \arguments{
 \item{lines}{Character vector with lines of text; can have internal
@@ -23,6 +23,10 @@ indent level (see Details).
 \item{tab}{Character string; what to use as an indent.}
 
 \item{start}{Indent level to start at.}
+
+\item{stepwise}{If \code{TRUE}, ensure consecutive lines with the same indent
+level never stand out by more than one indent level from surrounding
+lines.}
 }
 \value{
 Reindented lines as a character vector.
