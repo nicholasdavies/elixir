@@ -2,6 +2,10 @@
 
 ## elixir (development version)
 
+- Non-ASCII tokens are now recognised by reindent().
+- Indentation levels can now be “compressed” in reindent().
+- Fixes to parenthesis and \[\[ behaviour in translate().
+
 ## elixir 0.1.2
 
 CRAN release: 2026-09-02

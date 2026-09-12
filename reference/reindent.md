@@ -10,7 +10,7 @@ This function is experimental.
 ## Usage
 
 ``` r
-reindent(lines, rules, tab = "    ", start = 0L)
+reindent(lines, rules, tab = "    ", start = 0L, stepwise = TRUE)
 ```
 
 ## Arguments
@@ -44,6 +44,11 @@ reindent(lines, rules, tab = "    ", start = 0L)
 - start:
 
   Indent level to start at.
+
+- stepwise:
+
+  If `TRUE`, ensure consecutive lines with the same indent level never
+  stand out by more than one indent level from surrounding lines.
 
 ## Value
 
