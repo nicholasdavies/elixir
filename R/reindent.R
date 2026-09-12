@@ -88,7 +88,9 @@ reindent = function(lines, rules, tab = "    ", start = 0L, stepwise = TRUE)
     lines = unlist(stringr::str_split(lines, "\n"));
 
     # Process rule components from character vectors into lists
-    tokenize = function(x) stringr::str_split(x, stringr::boundary("word", skip_word_none = FALSE));
+    # Tokens are runs of identifier characters (including all non-ASCII
+    # characters), runs of whitespace, or single other characters
+    tokenize = function(x) stringr::str_extract_all(x, "[A-Za-z0-9_\\x{80}-\\x{10FFFF}]+|\\s+|.");
     indent_more = tokenize(rules$indent_more);
     indent_less = tokenize(rules$indent_less);
     indent_both = tokenize(rules$indent_both);
